@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifica Prenotazione{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Modifica Prenotazione</h1>
+    <form action="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" method="POST">
+        <input type="hidden" name="token" value="{{ token }}">
+        <input type="text" name="nome" placeholder="Nome" value="{{ prenotazione.nome }}" required>
+        <input type="date" name="data" value="{{ prenotazione.data }}" required>
+        <input type="time" name="ora" value="{{ prenotazione.ora }}" required>
+        <input type="number" name="numero_persone" placeholder="Numero di persone" value="{{ prenotazione.numero_persone }}" required>
+        <button type="submit" class="btn btn-primary">Conferma Modifica</button>
+    </form>
+</div>
+{% endblock %}

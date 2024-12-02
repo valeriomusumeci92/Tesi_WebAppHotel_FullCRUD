@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Prenotazione Camera{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <title>Prenotazione {{ camera.nome }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>{{ camera.nome }}</h1>
+<img src="{{ url_for('static', filename=camera.immagine) }}" alt="{{ camera.nome }}" style="width:100%; max-height:400px; object-fit:cover;"> <!-- Mostra l'immagine della camera -->
+<p>{{ camera.descrizione }}</p> <!-- Mostra la descrizione della camera -->
+
+  <!-- Form di prenotazione nel camera_specifica.html -->
+  <form action="{{ url_for('invia_prenotazione', camera_id=camera.id) }}" method="POST">
+    <input type="hidden" name="camera_id" value="{{ camera.id }}">
+    <input type="text" name="nome" placeholder="Nome" required>
+    <input type="date" name="data" required>
+    <input type="time" name="ora" required>
+    <input type="number" name="numero_persone" placeholder="Numero di persone" required>
+    <button type="submit" class="btn btn-primary">Prenota</button>
+</form>
+
+
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flashes">
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+{% endblock %}

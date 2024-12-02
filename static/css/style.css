@@ -1,0 +1,26 @@
+/* Stile per i messaggi flash */
+.flashes {
+    margin: 20px 0;
+}
+
+.alert {
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    color: white; /* Testo bianco */
+}
+
+.alert-success {
+    background-color: #28a745; /* Colore verde */
+}
+
+/* Rimuove il pallino delle liste */
+.flashes ul {
+    list-style-type: none; /* Rimuove il pallino */
+    padding: 0; /* Rimuove il padding */
+}
+
+.flashes li {
+    margin: 5px 0; /* Spaziatura tra i messaggi */
+}

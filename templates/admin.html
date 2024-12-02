@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Login Admin - Hotel App{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Login Admin</h2>
+    <form id="login-form" action="#">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username:</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password:</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <div id="login-message" class="mt-3"></div>
+</div>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Impedire l'invio del modulo in modo standard
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // Specifichiamo che inviamo JSON
+            },
+            body: JSON.stringify({ username: username, password: password }) // Convertiamo i dati in JSON
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Login fallito'); // Lancia un errore se la risposta non è OK
+            }
+            return response.json(); // Restituisce la risposta JSON se OK
+        })
+        .then(data => {
+            if (data.success) {
+                // Reindirizza se il login ha successo
+                window.location.href = '{{ url_for("admin_page") }}';
+            } else {
+                // Mostra il messaggio di errore
+                document.getElementById('login-message').innerText = data.message;
+            }
+        })
+        .catch(error => {
+            console.error('Errore:', error);
+            document.getElementById('login-message').innerText = 'Si è verificato un errore durante la richiesta.';
+        });
+    });
+</script>
+{% endblock %}

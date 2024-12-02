@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Prenotazione Confermata{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="my-5">Ecco i dettagli:</h2>
+    <p><strong>Nominativo:</strong> {{ prenotazione.nome }}</p>
+    <p><strong>Check-in:</strong> {{ prenotazione.data }}</p>
+    <p><strong>Check-out:</strong> {{ prenotazione.ora }}</p> <!-- Potresti voler aggiungere un campo di check-out specifico -->
+    <p><strong>Tipologia di Camera:</strong> {{ camera.nome }}</p>
+    <p><strong>Codice Prenotazione:</strong> {{ prenotazione.codice_prenotazione }}</p>
+    <P>Ricorda di salvare il codice prenotazione e di presentarlo alla reception al momento del check-in.</p>
+    <!-- Aggiungi un campo per i check-out -->
+    <button class="text-danger" type="button" onclick="deleteBooking('{{ prenotazione.codice_prenotazione }}');">Cancella prenotazione</button>
+
+    <script>
+        function deleteBooking(codice_prenotazione) {
+            const token = '{{ session['elimina_token'] }}'; // Ottieni il token dalla sessione
+
+            fetch(`/elimina_prenotazione/${codice_prenotazione}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: token }) // Invia il token nel body JSON
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    window.location.href = "/conferma_eliminazione"; // Reindirizza alla pagina di conferma eliminazione
+                } else {
+                    alert('Errore nell\'eliminazione della prenotazione. Riprova.');
+                }
+            })
+            .catch(function(error) {
+                console.error('Errore:', error);
+                alert('Si è verificato un errore. Controlla la console per dettagli.');
+            });
+        }
+    </script>
+    <a href="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" class="btn btn-warning">Modifica Prenotazione</a>
+
+</div>
+
+{% endblock %}

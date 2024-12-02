@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Conferma Eliminazione - Hotel App{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+<h1 class="text-danger">Prenotazione Eliminata con Successo!</h1>
+<p>La tua prenotazione è stata eliminata correttamente.</p>
+<a href="{{ url_for('home') }}">Torna alla homepage</a>
+</div>
+
+{% endblock %}
