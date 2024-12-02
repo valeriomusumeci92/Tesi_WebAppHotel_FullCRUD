@@ -17,7 +17,6 @@
     <script>
         function deleteBooking(codice_prenotazione) {
             const token = '{{ session['elimina_token'] }}'; // Ottieni il token dalla sessione
-
             fetch(`/elimina_prenotazione/${codice_prenotazione}`, {
                 method: 'DELETE',
                 headers: {
@@ -29,7 +28,7 @@
                 if (response.ok) {
                     window.location.href = "/conferma_eliminazione"; // Reindirizza alla pagina di conferma eliminazione
                 } else {
-                    alert('Errore nell\'eliminazione della prenotazione. Riprova.');
+                    alert('Errore nell\'eliminazione della prenotazione: ' + response.statusText);
                 }
             })
             .catch(function(error) {
@@ -37,6 +36,7 @@
                 alert('Si è verificato un errore. Controlla la console per dettagli.');
             });
         }
+
     </script>
     <a href="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" class="btn btn-warning">Modifica Prenotazione</a>
 

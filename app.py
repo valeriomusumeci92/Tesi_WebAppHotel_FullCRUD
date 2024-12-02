@@ -111,7 +111,7 @@ def prenota_camera(camera_id):
 
 
 def genera_codice_prenotazione():
-    return f'#{random.randint(10000, 99999)}'  # Genera un codice casuale
+    return f'{random.randint(10000, 99999)}'  # Genera un codice casuale
 
 
 @app.route('/invia_prenotazione/<int:camera_id>', methods=['POST'])
@@ -154,7 +154,7 @@ def pagina_conferma(codice_prenotazione):
 
     # Recupera la camera associata alla prenotazione
     camera = Camera.query.get(prenotazione.camera_id)
-
+    session['elimina_token'] = secrets.token_urlsafe(16)  # Genera e salva il token
     return render_template('conferma_prenotazione.html', prenotazione=prenotazione, camera=camera)
 
 
@@ -205,20 +205,19 @@ def conferma_eliminazione():
 
 @app.route('/elimina_prenotazione/<codice_prenotazione>', methods=['DELETE'])
 def elimina_prenotazione(codice_prenotazione):
-    # Controlla il token di sicurezza
-    token = request.json.get('token')  # Usa request.json per ottenere il token dal body
+    token = request.json.get('token')
     if token != session.get('elimina_token'):
-        return jsonify({'message': 'Token non valido'}), 403  # Restituisci un errore 403
+        return jsonify({'message': 'Token non valido'}), 403
 
-    # Prova a trovare la prenotazione
     prenotazione = Prenotazione.query.filter_by(codice_prenotazione=codice_prenotazione).first()
 
-    if prenotazione:  # Se la prenotazione è stata trovata
-        db.session.delete(prenotazione)  # Elimina la prenotazione
-        db.session.commit()  # Applica le modifiche
-        return redirect(url_for('conferma_eliminazione.html'))  # Reindirizza alla pagina di conferma eliminazione
+    if prenotazione:
+        db.session.delete(prenotazione)
+        db.session.commit()
+        return jsonify({'message': 'Prenotazione eliminata con successo.'}), 200
     else:
-        return jsonify({'message': 'Prenotazione non trovata'}), 404  # Restituisci un errore 404
+        return jsonify({'message': 'Prenotazione non trovata'}), 404
+
 
 
 
