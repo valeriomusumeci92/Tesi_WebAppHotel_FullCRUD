@@ -5,14 +5,15 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="my-5">Ecco i dettagli:</h2>
-    <p><strong>Nominativo:</strong> {{ prenotazione.nome }}</p>
+    <p><strong>Nominativo:</strong> {{ prenotazione.nome }}  {{ prenotazione.cognome }}</p>
     <p><strong>Check-in:</strong> {{ prenotazione.data }}</p>
     <p><strong>Check-out:</strong> {{ prenotazione.ora }}</p> <!-- Potresti voler aggiungere un campo di check-out specifico -->
     <p><strong>Tipologia di Camera:</strong> {{ camera.nome }}</p>
     <p><strong>Codice Prenotazione:</strong> {{ prenotazione.codice_prenotazione }}</p>
-    <P>Ricorda di salvare il codice prenotazione e di presentarlo alla reception al momento del check-in.</p>
+    <P>Ricorda di salvare il codice prenotazione e di presentarlo alla reception al momento del check-in</P>
+    <p> Nessun pagamento anticipato salderai il conto direttamente in struttura, ti aspettiamo!</p>
     <!-- Aggiungi un campo per i check-out -->
-    <button class="text-danger" type="button" onclick="deleteBooking('{{ prenotazione.codice_prenotazione }}');">Cancella prenotazione</button>
+    <button class="bg-danger" type="button" onclick="deleteBooking('{{ prenotazione.codice_prenotazione }}');">Cancella prenotazione</button>
 
     <script>
         function deleteBooking(codice_prenotazione) {

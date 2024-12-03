@@ -14,14 +14,32 @@
 <p>{{ camera.descrizione }}</p> <!-- Mostra la descrizione della camera -->
 
   <!-- Form di prenotazione nel camera_specifica.html -->
-  <form action="{{ url_for('invia_prenotazione', camera_id=camera.id) }}" method="POST">
-    <input type="hidden" name="camera_id" value="{{ camera.id }}">
-    <input type="text" name="nome" placeholder="Nome" required>
-    <input type="date" name="data" required>
-    <input type="time" name="ora" required>
-    <input type="number" name="numero_persone" placeholder="Numero di persone" required>
-    <button type="submit" class="btn btn-primary">Prenota</button>
+  <form method="POST" action="{{ url_for('invia_prenotazione', camera_id=camera_id) }}">
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" name="nome" required>
+
+    <label for="cognome">Cognome:</label>
+    <input type="text" id="cognome" name="cognome" required>
+
+    <label for="checkin">Check-in:</label>
+    <input type="date" id="checkin" name="checkin" required>
+
+    <label for="checkout">Check-out:</label>
+    <input type="date" id="checkout" name="checkout" required>
+
+    <label for="data_nascita">Data di Nascita:</label>
+    <input type="date" id="data_nascita" name="data_nascita" required>
+
+    <label for="numero_persone">Numero Persone:</label>
+    <input type="number" id="numero_persone" name="numero_persone" required>
+
+    <label for="email">Indirizzo Email:</label>
+    <input type="email" id="email" name="email" required>
+    <small>Aggiungi la email per ricevere importanti dettagli sulla prenotazione.</small>
+
+    <button type="submit">Prenota</button>
 </form>
+
 
 
 </div>
