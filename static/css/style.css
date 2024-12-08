@@ -1,16 +1,71 @@
+
+
+ html,body {
+    min-height: 100vh;
+    margin: 0;
+}
+main {
+    flex: 1;
+}
+
+
+.navbar-bg {
+    background-size: cover;   /* Assicura che l'immagine di sfondo copra completamente il contenitore */
+    background-position: center; /* Centra l'immagine di sfondo */
+    height: 300px; /* Altezza della navbar */
+    width: 100%;
+    position: absolute; /* Posizionamento assoluto per sovrapporsi alla navbar */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 0; /* Fa sì che l'immagine sia sotto alla navbar */
+}
+
+.navbar {
+    position: relative; /* Posiziona la navbar relativa al suo contenitore */
+    z-index: 1; /* Assicura che il contenuto della navbar stia sopra l'immagine di sfondo */
+}
+
+
+.img-container {
+    width: 100%;
+    max-width: 600px; /* Modifica a piacere */
+    height: 300px; /* Modifica a piacere */
+    overflow: hidden;
+    position: relative;
+}
+
+.img-container img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+}
 /* Stile per i messaggi flash */
 .flashes {
-    margin: 20px 0;
+    margin: 20px 0; /* Margine tra i messaggi e gli altri elementi */
 }
 
 .alert {
-    padding: 15px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
+    padding: 15px; /* Padding all'interno dell'alert */
+    margin: 10px 0; /* Margine tra gli alert */
+    border: none; /* Rimuove il bordo predefinito */
+    border-radius: 5px; /* Angoli arrotondati */
+    transition: opacity 0.5s ease; /* Transizione fluida per l'opacità */
+}
+
+.alert-success {
+    background-color: #28a745; /* Colore verde per i messaggi di successo */
     color: white; /* Testo bianco */
 }
 
+.alert-danger {
+    background-color: #dc3545; /* Colore rosso per i messaggi di errore */
+    color: white; /* Testo bianco */
+}
 .alert-success {
     background-color: #28a745; /* Colore verde */
 }

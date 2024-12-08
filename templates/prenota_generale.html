@@ -6,68 +6,18 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Tipologie di Camere</h2>
     <div class="row">
-        <!-- Card 1: Camera Deluxe Tripla -->
+        {% for camera in camere %}
         <div class="col-md-4 mb-4">
             <div class="card">
-                <img src="{{ url_for('static', filename='images/deluxe_tripla.jpg') }}" class="card-img-top" alt="Camera Deluxe Tripla">
+                <img src="{{ url_for('static', filename=camera.immagine) }}" class="card-img-top" alt="{{ camera.nome }}">
                 <div class="card-body">
-                    <h5 class="card-title">Camera Deluxe Tripla</h5>
-                    <a href="{{ url_for('prenota_camera', camera_id=1) }}" class="btn btn-primary">Prenota Ora</a>
+                    <h5 class="card-title">{{ camera.nome }}</h5>
+                    <p class="card-text">{{ camera.descrizione }}</p> <!-- Opzionale: descrizione della camera -->
+                    <a href="{{ url_for('prenota_camera', camera_id=camera.id) }}" class="btn btn-primary">Prenota Ora</a>
                 </div>
             </div>
         </div>
-        <!-- Card 2: Camera Deluxe Doppia -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='images/deluxe_doppia.jpg') }}" class="card-img-top" alt="Camera Deluxe Doppia">
-                <div class="card-body">
-                    <h5 class="card-title">Camera Deluxe Doppia</h5>
-                    <a href="{{ url_for('prenota_camera', camera_id=2) }}" class="btn btn-primary">Prenota Ora</a>
-                </div>
-            </div>
-        </div>
-        <!-- Card 3: Camera Deluxe Singola -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='images/deluxe_singola.jpg') }}" class="card-img-top" alt="Camera Deluxe Singola">
-                <div class="card-body">
-                    <h5 class="card-title">Camera Deluxe Singola</h5>
-                    <a href="{{ url_for('prenota_camera', camera_id=3) }}" class="btn btn-primary">Prenota Ora</a>
-                </div>
-            </div>
-        </div>
-        <!-- Card 4: Camera Economica Tripla -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='images/economica_tripla.jpg') }}" class="card-img-top" alt="Camera Economica Tripla">
-                <div class="card-body">
-                    <h5 class="card-title">Camera Economica Tripla</h5>
-                    <a href="{{ url_for('prenota_camera', camera_id=4) }}" class="btn btn-primary">Prenota Ora</a>
-                </div>
-            </div>
-        </div>
-        <!-- Card 5: Camera Economica Doppia -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='images/economica_doppia.jpg') }} " class="card-img-top" alt="Camera Economica Doppia">
-                <div class="card-body">
-                    <h5 class="card-title">Camera Economica Doppia</h5>
-                    <a href="{{ url_for('prenota_camera', camera_id=5) }}" class="btn btn-primary">Prenota Ora</a>
-                </div>
-            </div>
-        </div>
-        <!-- Card 6: Camera Economica Singola -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='images/economica_singola.jpg') }}" class="card-img-top" alt="Camera Economica Singola">
-                <div class="card-body">
-                    <h5 class="card-title">Camera Economica Singola</h5>
-                    <a href="{{ url_for('prenota_camera', camera_id=6) }}" class="btn btn-primary">Prenota Ora</a>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
-
-

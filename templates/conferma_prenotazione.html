@@ -3,31 +3,38 @@
 {% block title %}Prenotazione Confermata{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="my-5">Ecco i dettagli:</h2>
-    <p><strong>Nominativo:</strong> {{ prenotazione.nome }}  {{ prenotazione.cognome }}</p>
-    <p><strong>Check-in:</strong> {{ prenotazione.data }}</p>
-    <p><strong>Check-out:</strong> {{ prenotazione.ora }}</p> <!-- Potresti voler aggiungere un campo di check-out specifico -->
-    <p><strong>Tipologia di Camera:</strong> {{ camera.nome }}</p>
+<h2 class="text-cente my-5 text-center">Ecco i dettagli della tua prenotazione</h2>
+<div class="container mt-5 my-5">
+    <p><strong>Nominativo:</strong> {{ prenotazione.nome }} {{ prenotazione.cognome }}</p>
     <p><strong>Codice Prenotazione:</strong> {{ prenotazione.codice_prenotazione }}</p>
-    <P>Ricorda di salvare il codice prenotazione e di presentarlo alla reception al momento del check-in</P>
-    <p> Nessun pagamento anticipato salderai il conto direttamente in struttura, ti aspettiamo!</p>
-    <!-- Aggiungi un campo per i check-out -->
-    <button class="bg-danger" type="button" onclick="deleteBooking('{{ prenotazione.codice_prenotazione }}');">Cancella prenotazione</button>
+    <p><strong>Check-in:</strong> {{ prenotazione.checkin }}</p>
+    <p><strong>Check-out:</strong> {{ prenotazione.checkout }}</p>
+    <p><strong>Email:</strong> {{ prenotazione.email }}</p>
+    <p><strong>Numero di persone:</strong> {{ prenotazione.numero_persone }}</p>
+    <p><strong>Tipologia di Camera:</strong> {{ camera.nome }}</p>
+    <p><strong>Prezzo totale:</strong> {{ prenotazione.prezzo_totale}}€</p>
+    <p class="col-6"><strong>Ricorda di controllare la tua email di conferma dove è stato inviato il codice prenotazione. Porta con te il codice prenotazione in struttura. Non dovrai anticipare nulla salderai direttamente il conto in struttura.</strong></p>
+    <div class="img-container">
+    <img src="{{ url_for('static', filename=camera.immagine) }}" alt="{{ camera.nome }}" class="img-fluid">
+    </div>
+    <div class="mt-4">
+        <a href="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" class="btn btn-warning">Modifica Prenotazione</a>
+        <button class="btn btn-danger" type="button" onclick="deleteBooking('{{ prenotazione.codice_prenotazione }}');">Cancella Prenotazione</button>
+    </div>
 
     <script>
         function deleteBooking(codice_prenotazione) {
-            const token = '{{ session['elimina_token'] }}'; // Ottieni il token dalla sessione
+            const token = '{{ session['elimina_token'] }}';
             fetch(`/elimina_prenotazione/${codice_prenotazione}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ token: token }) // Invia il token nel body JSON
+                body: JSON.stringify({ token: token })
             })
             .then(function(response) {
                 if (response.ok) {
-                    window.location.href = "/conferma_eliminazione"; // Reindirizza alla pagina di conferma eliminazione
+                    window.location.href = "/conferma_eliminazione";
                 } else {
                     alert('Errore nell\'eliminazione della prenotazione: ' + response.statusText);
                 }
@@ -37,10 +44,6 @@
                 alert('Si è verificato un errore. Controlla la console per dettagli.');
             });
         }
-
     </script>
-    <a href="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" class="btn btn-warning">Modifica Prenotazione</a>
-
 </div>
-
 {% endblock %}

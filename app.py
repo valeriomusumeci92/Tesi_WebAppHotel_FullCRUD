@@ -21,7 +21,7 @@ login_manager.init_app(app)
 
 
 def invia_email(email_destinatario):
-    msg = MIMEText("La tua prenotazione è stata effettuata con successo!")
+    msg = MIMEText("La tua prenotazione è stata effettuata con successo! Ecco il tuo codice prenotazione")
     msg['Subject'] = 'Conferma Prenotazione'
     msg['From'] = 'tesimusumeci@gmail.com'
     msg['To'] = email_destinatario
@@ -39,57 +39,75 @@ def invia_email(email_destinatario):
 # Modelli
 
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(150))
-
-
 class Prenotazione(db.Model):
+    __tablename__ = 'prenotazioni'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     cognome = db.Column(db.String(100), nullable=False)
-    checkin = db.Column(db.String(10), nullable=False)
-    checkout = db.Column(db.String(10), nullable=False)
-    data_nascita = db.Column(db.String(10), nullable=False)
+    checkin = db.Column(db.DateTime, nullable=False)  # Modificato in DateTime
+    checkout = db.Column(db.DateTime, nullable=False)  # Modificato in DateTime
+    data_nascita = db.Column(db.DateTime, nullable=False)  # Modificato in DateTime se necessario
     numero_persone = db.Column(db.Integer, nullable=False)
     codice_prenotazione = db.Column(db.String(10), unique=True, nullable=False)
-    camera_id = db.Column(db.Integer, db.ForeignKey(
-        'camera.id'), nullable=False)
+    camera_id = db.Column(db.Integer, db.ForeignKey('camera.id'), nullable=False)
     email = db.Column(db.String(150))
-    # Nuovo campo per data e ora di prenotazione
+    prezzo_totale = db.Column(db.Integer, nullable=False)  # Include il prezzo totale
     data_prenotazione = db.Column(db.DateTime, default=datetime.utcnow)
 
+    camera = db.relationship('Camera', back_populates='prenotazioni')
 
 class Camera(db.Model):
+    __tablename__ = 'camera'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     immagine = db.Column(db.String(200), nullable=False)
     descrizione = db.Column(db.Text, nullable=True)
+    prezzo = db.Column(db.Integer, nullable=False)  # Prezzo per notte della camera
+    disponibile = db.Column(db.Boolean, default=True)
+    max_persone = db.Column(db.Integer, nullable=False)
+
+    prenotazioni = db.relationship('Prenotazione', back_populates='camera')
 
 
 class ModificaPrenotazioneLog(db.Model):
-    # Assicurati che questo sia il nome corretto della tabella
     __tablename__ = 'modifica_prenotazione_log'
 
     id = db.Column(db.Integer, primary_key=True)
     codice_prenotazione = db.Column(db.String(10), db.ForeignKey(
-        'prenotazione.codice_prenotazione'), nullable=False)
-    nome_modificato = db.Column(db.String(100), nullable=True)
-    cognome_modificato = db.Column(db.String(100), nullable=False)
-    # Aggiornato per match con tipo di dato
-    checkin_modificato = db.Column(db.String(10), nullable=False)
-    # Aggiornato per match con tipo di dato
-    checkout_modificato = db.Column(db.String(10), nullable=False)
-    # Aggiunto per registrare il numero di persone
-    numero_persone_modificato = db.Column(db.Integer, nullable=False)
-    # Aggiunto per registrare il nuovo email
-    email_modificato = db.Column(db.String(150), nullable=True)
-    # Tempo della modifica
+        'prenotazioni.codice_prenotazione'), nullable=False)  # Fix here
+    nome_originario = db.Column(db.String(100), nullable=True)
+    cognome_originario = db.Column(db.String(100), nullable=False)
+    checkin_originario = db.Column(db.String(10), nullable=False)
+    checkout_originario = db.Column(db.String(10), nullable=False)
+    numero_persone_originario = db.Column(db.Integer, nullable=False)
+    email_originaria = db.Column(db.String(150), nullable=True)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def __repr__(self):
         return f'<ModificaPrenotazioneLog {self.codice_prenotazione} - {self.timestamp}>'
+
+
+class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)  # Required for Flask-Login
+
+
+@app.cli.command('create-admin')
+def create_admin():
+    """Crea un admin."""
+    username = input("Inserisci il nome utente per l'admin: ")
+    password = input("Inserisci la password per l'admin: ")
+
+    hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    new_user = User(username=username, password=hashed_pw, is_admin=True)
+
+    db.session.add(new_user)
+    db.session.commit()
+    print(f"Admin {username} creato!")
 
 
 # Rotte
@@ -124,8 +142,8 @@ def logout():
 
 @app.route('/prenota')
 def prenota():
-    camere = Camera.query.all()
-    return render_template('prenota_generale.html', camere=camere)
+    camere_disponibili = Camera.query.filter_by(disponibile=True).all()
+    return render_template('prenota_generale.html', camere=camere_disponibili)
 
 
 @app.route('/about')
@@ -147,6 +165,21 @@ def prenota_camera(camera_id):
     return render_template('camera_specifica.html', camera=camera, camera_id=camera.id)
 
 
+@app.route('/verifica_prenotazione', methods=['GET', 'POST'])
+def check_prenotazione():
+    if request.method == 'POST':
+        codice_prenotazione = request.form.get('codice_prenotazione')
+        prenotazione = Prenotazione.query.filter_by(
+            codice_prenotazione=codice_prenotazione).first()
+        if prenotazione:
+            # Reindirizza alla pagina di conferma della prenotazione
+            return redirect(url_for('pagina_conferma', codice_prenotazione=prenotazione.codice_prenotazione))
+        else:
+            flash('Prenotazione non trovata. Verifica il codice e riprova.', 'danger')
+            return redirect(url_for('check_prenotazione'))
+    return render_template('verifica_prenotazione.html')
+
+
 def genera_codice_prenotazione():
     return f'{random.randint(10000, 99999)}'
 
@@ -157,31 +190,69 @@ def invia_prenotazione(camera_id):
     cognome = request.form.get('cognome')
     checkin = request.form.get('checkin')
     checkout = request.form.get('checkout')
-    data_nascita = request.form.get('data_nascita')
+    data_nascita = request.form.get('data_nascita')  # Se desideri convertirlo in datetime, fallo qui
     numero_persone = request.form.get('numero_persone')
     email = request.form.get('email')
+
+    camera = Camera.query.get(camera_id)  # Ottieni i dettagli della camera
+    if not camera:
+        return "Camera non trovata", 404
+
+    # Calcola il prezzo totale
+    checkin_date = datetime.strptime(checkin, '%Y-%m-%d')
+    checkout_date = datetime.strptime(checkout, '%Y-%m-%d')
+    numero_notti = (checkout_date - checkin_date).days
+
+    if numero_notti <= 0:
+        flash('La data di check-out deve essere successiva alla data di check-in.', 'danger')
+        return redirect(url_for('prenota_camera', camera_id=camera_id))
+
+    prezzo_totale = numero_notti * camera.prezzo
 
     codice_prenotazione = genera_codice_prenotazione()
 
     nuova_prenotazione = Prenotazione(
         nome=nome,
         cognome=cognome,
-        checkin=checkin,
-        checkout=checkout,
-        data_nascita=data_nascita,
+        checkin=checkin_date,  # Usare oggetto datetime
+        checkout=checkout_date,  # Usare oggetto datetime
+        data_nascita=datetime.strptime(data_nascita, '%Y-%m-%d'),  # Convertito in oggetto datetime
         numero_persone=numero_persone,
         codice_prenotazione=codice_prenotazione,
         email=email,
-        camera_id=camera_id
+        camera_id=camera_id,
+        prezzo_totale=prezzo_totale  # Include il prezzo totale
     )
 
     db.session.add(nuova_prenotazione)
     db.session.commit()
 
-    invia_email(email)
     flash('Prenotazione completata con successo!', 'success')
     return redirect(url_for('pagina_conferma', codice_prenotazione=codice_prenotazione))
 
+
+@app.route('/api/disponibilita_camera/<int:camera_id>', methods=['GET'])
+def check_disponibilita_camera(camera_id):
+    checkin = request.args.get('checkin')
+    checkout = request.args.get('checkout')
+
+    # Esegui una query per trovare tutte le prenotazioni di questa camera
+    prenotazioni = Prenotazione.query.filter(
+        Prenotazione.camera_id == camera_id,
+        or_(
+            and_(Prenotazione.checkin < checkout, Prenotazione.checkout > checkin)
+        )
+    ).all()
+
+    # Se ci sono prenotazioni che sovrappongono le date, ritorna queste date come non disponibili
+    unavailable_dates = []
+    if prenotazioni:
+        unavailable_dates.append({
+            "checkin": prenotazione.checkin,
+            "checkout": prenotazione.checkout
+        } for prenotazione in prenotazioni)
+
+    return jsonify(unavailable_dates)
 
 @app.route('/conferma_prenotazione/<codice_prenotazione>')
 def pagina_conferma(codice_prenotazione):
@@ -197,12 +268,20 @@ def pagina_conferma(codice_prenotazione):
 
 @app.route('/modifica_prenotazione/<codice_prenotazione>', methods=['GET', 'POST'])
 def modifica_prenotazione(codice_prenotazione):
-    prenotazione = Prenotazione.query.filter_by(
-        codice_prenotazione=codice_prenotazione).first()
+    # Recupera la prenotazione dal database usando il codice
+    prenotazione = Prenotazione.query.filter_by(codice_prenotazione=codice_prenotazione).first()
+
+    # Controlla se la prenotazione esiste
     if not prenotazione:
         return "Prenotazione non trovata", 404
 
+    # Recupera la camera associata alla prenotazione
+    camera = Camera.query.filter_by(id=prenotazione.camera_id).first()  # Assicurati che prenotazione.camera_id esista
+    if not camera:
+        return "Camera non trovata", 404
+
     if request.method == 'POST':
+        # Verifica il token di modifica per sicurezza
         token = session.get('modifica_token')
         if token != request.form.get('token'):
             flash('Token non valido o scaduto.', 'danger')
@@ -211,36 +290,79 @@ def modifica_prenotazione(codice_prenotazione):
         # Log delle modifiche
         modifica_log = ModificaPrenotazioneLog(
             codice_prenotazione=prenotazione.codice_prenotazione,
-            nome_modificato=prenotazione.nome,
-            cognome_modificato=prenotazione.cognome,
-            checkin_modificato=prenotazione.checkin,  # Aggiunto per registrare il check-in
-            # Aggiunto per registrare il check-out
-            checkout_modificato=prenotazione.checkout,
-            numero_persone_modificato=prenotazione.numero_persone,
-            email_modificato=prenotazione.email
+            nome_originario=prenotazione.nome,
+            cognome_originario=prenotazione.cognome,
+            checkin_originario=prenotazione.checkin,
+            checkout_originario=prenotazione.checkout,
+            numero_persone_originario=prenotazione.numero_persone,
+            email_originaria=prenotazione.email
         )
         db.session.add(modifica_log)
 
-        # Aggiornare tutti i campi pertinenti
+        # Recupera i dati dal form
+        checkin = request.form.get('checkin')  # Resta una stringa 'YYYY-MM-DD'
+        checkout = request.form.get('checkout')  # Resta una stringa 'YYYY-MM-DD'
+        data_nascita = request.form.get('data_nascita')  # Resta una stringa 'YYYY-MM-DD'
+        numero_persone = int(request.form.get('numero_persone'))
+
+        # Calcola e controlla le nuove date
+        checkin_date = datetime.strptime(checkin, '%Y-%m-%d')  # Converti in datetime
+        checkout_date = datetime.strptime(checkout, '%Y-%m-%d')  # Converti in datetime
+        numero_notti = (checkout_date - checkin_date).days
+
+        if numero_notti <= 0:
+            flash('La data di check-out deve essere successiva alla data di check-in.', 'danger')
+            return redirect(url_for('modifica_prenotazione', codice_prenotazione=codice_prenotazione))
+
+        # Controllo della data di nascita
+        data_nascita_date = datetime.strptime(data_nascita, '%Y-%m-%d').date()  # Converti in date
+        eta = (datetime.now().date() - data_nascita_date).days // 365  # Calcolo dell'età
+        if eta < 18:
+            flash('Devi avere almeno 18 anni per effettuare una prenotazione.', 'danger')
+            return redirect(url_for('modifica_prenotazione', codice_prenotazione=codice_prenotazione))
+
+        # Controllo sul numero di persone basato sull'ID della camera
+        if camera.id in [1, 4]:  # Tripla Deluxe or Tripla Economica
+            if numero_persone < 1 or numero_persone > 3:
+                flash('Nella camera può esserci da 1 a 3 persone.', 'danger')
+                return redirect(url_for('modifica_prenotazione', codice_prenotazione=codice_prenotazione))
+        elif camera.id in [2, 5]:  # Doppia Deluxe or Doppia Economica
+            if numero_persone < 1 or numero_persone > 2:
+                flash('Nella camera può esserci da 1 a 2 persone.', 'danger')
+                return redirect(url_for('modifica_prenotazione', codice_prenotazione=codice_prenotazione))
+        elif camera.id in [3, 6]:  # Singola Deluxe or Singola Economica
+            if numero_persone != 1:
+                flash('Nella camera può esserci solo 1 persona.', 'danger')
+                return redirect(url_for('modifica_prenotazione', codice_prenotazione=codice_prenotazione))
+
+        # Aggiorna i campi della prenotazione
         prenotazione.nome = request.form.get('nome', prenotazione.nome)
-        prenotazione.cognome = request.form.get(
-            'cognome', prenotazione.cognome)
-        prenotazione.checkin = request.form.get(
-            'checkin', prenotazione.checkin)
-        prenotazione.checkout = request.form.get(
-            'checkout', prenotazione.checkout)
-        prenotazione.data_nascita = request.form.get(
-            'data_nascita', prenotazione.data_nascita)
-        prenotazione.numero_persone = request.form.get(
-            'numero_persone', prenotazione.numero_persone)
+        prenotazione.cognome = request.form.get('cognome', prenotazione.cognome)
+        prenotazione.checkin = checkin_date  # Assicurati di assegnare l'oggetto datetime
+        prenotazione.checkout = checkout_date  # Assicurati di assegnare l'oggetto datetime
+        prenotazione.data_nascita = data_nascita_date  # Assicurati di assegnare l'oggetto date
+        prenotazione.numero_persone = numero_persone
         prenotazione.email = request.form.get('email', prenotazione.email)
 
+        # Ricalcola il prezzo totale
+        prenotazione.prezzo_totale = numero_notti * camera.prezzo
+
+        # Salva le modifiche nel database
         db.session.commit()
         flash('Prenotazione aggiornata con successo!', 'success')
         return redirect(url_for('pagina_conferma', codice_prenotazione=prenotazione.codice_prenotazione))
 
+    # Genera un nuovo token di sessione per la modifica
     session['modifica_token'] = secrets.token_urlsafe(16)
-    return render_template('modifica_prenotazione.html', prenotazione=prenotazione, token=session['modifica_token'])
+
+    # Ritorna il template con i dati della prenotazione e della camera
+    return render_template(
+        'modifica_prenotazione.html',
+        prenotazione=prenotazione,
+        token=session['modifica_token'],
+        camera=camera
+    )
+
 
 
 @app.route('/conferma_eliminazione')
@@ -248,7 +370,7 @@ def conferma_eliminazione():
     return render_template('conferma_eliminazione.html')
 
 
-@app.route('/elimina_prenotazione/<codice_prenotazione>', methods=['DELETE'])
+@app.route('/elimina_prenotazione/<codice_prenotazione>', methods=['GET', 'DELETE'])
 def elimina_prenotazione(codice_prenotazione):
     token = request.json.get('token')
     if token != session.get('elimina_token'):
@@ -354,6 +476,54 @@ def elimina_prenotazione_api(codice_prenotazione):
     return jsonify({'message': 'Prenotazione eliminata con successo.'}), 200
 
 # rotte per admin
+
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    user = User.query.filter_by(username=username).first()
+
+    if user and bcrypt.checkpw(password.encode('utf-8'), user.password):
+        login_user(user)
+        return jsonify(success=True), 200
+    else:
+        return jsonify(success=False, message='Credenziali errate'), 401
+
+
+@app.route('/admin/gestione')
+@login_required
+def gestione():
+    prenotazioni = Prenotazione.query.all()
+    camere = Camera.query.all()
+    return render_template('gestione.html', prenotazioni=prenotazioni, camere=camere)
+
+
+@app.route('/admin/camera/<int:camera_id>/non_disponibile', methods=['POST'])
+@login_required
+def elimina_disponibilita(camera_id):
+    camera = Camera.query.get(camera_id)
+    if camera:
+        camera.disponibile = False  # Imposta la camera come non disponibile
+        db.session.commit()  # Salva le modifiche nel database
+        flash('La camera è stata rimossa dalla disponibilità.', 'success')
+    else:
+        flash('Camera non trovata.', 'danger')
+    return redirect(url_for('gestione'))
+
+
+@app.route('/admin/camera/<int:camera_id>/disponibile', methods=['POST'])
+@login_required
+def rendi_disponibile(camera_id):
+    camera = Camera.query.get(camera_id)
+    if camera:
+        camera.disponibile = True  # Imposta la camera come disponibile
+        db.session.commit()  # Salva le modifiche nel database
+        flash('La camera è stata resa disponibile.', 'success')
+    else:
+        flash('Camera non trovata.', 'danger')
+    return redirect(url_for('gestione'))
 
 
 if __name__ == '__main__':

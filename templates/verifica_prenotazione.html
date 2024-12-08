@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Verifica Prenotazione{% endblock %}
+
+{% block content %}
+<div class="container mt-5 col-6">
+    <h2 class="text-center">Verifica Prenotazione</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="codice_prenotazione" class="form-label">Inserisci il codice prenotazione:</label>
+            <input type="text" class="form-control" id="codice_prenotazione" name="codice_prenotazione" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Verifica</button>
+    </form>
+</div>
+{% endblock %}

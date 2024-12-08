@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestione Prenotazioni e Camere - Hotel App{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Gestione Prenotazioni e Camere</h2>
+
+    <div class="row">
+        <!-- Sezione per le Prenotazioni -->
+        <div class="col-md-12">
+            <h4>Prenotazioni</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cognome</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Data di nascita</th>
+                            <th>Numero persone</th>
+                            <th>Codice prenotazione</th>
+                            <th>ID camera</th>
+                            <th>Email</th>
+                            <th>Data prenotazione</th>
+                            <th>Azioni</th>  <!-- Colonna per Azioni -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prenotazione in prenotazioni %}
+                        <tr>
+                            <td>{{ prenotazione.nome }}</td>
+                            <td>{{ prenotazione.cognome }}</td>
+                            <td>{{ prenotazione.checkin }}</td>
+                            <td>{{ prenotazione.checkout }}</td>
+                            <td>{{ prenotazione.data_nascita }}</td>
+                            <td>{{ prenotazione.numero_persone }}</td>
+                            <td>{{ prenotazione.codice_prenotazione }}</td>
+                            <td>{{ prenotazione.camera_id }}</td>
+                            <td>{{ prenotazione.email }}</td>
+                            <td>{{ prenotazione.data_prenotazione }}</td>
+                            <td>
+                                <!-- Pulsante Modifica -->
+                                <a href="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" class="btn btn-warning btn-sm my-2">Modifica</a>
+                                <!-- Pulsante Elimina -->
+                                <button type="button" class="btn btn-danger btn-sm delete-button my-2" data-codice-prenotazione="{{ prenotazione.codice_prenotazione }}">Elimina</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sezione per le Camere Disponibili -->
+        <div class="col-md-12 mt-4">
+            <h4>Camere Disponibili</h4>
+            <div class="row">
+                {% for camera in camere %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <img src="{{ url_for('static', filename=camera.immagine) }}" class="card-img-top"
+                             alt="{{ camera.nome }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ camera.nome }}</h5>
+                            <p class="card-text">{{ camera.descrizione }}</p>
+                            {% if camera.disponibile %}
+                                <form action="{{ url_for('elimina_disponibilita', camera_id=camera.id) }}" method="post">
+                                    <button type="submit" class="btn btn-danger">Elimina disponibilità</button>
+                                </form>
+                            {% else %}
+                                <form action="{{ url_for('rendi_disponibile', camera_id=camera.id) }}" method="post">
+                                    <button type="submit" class="btn btn-success">Rendi disponibile</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function() {
+    $('.delete-button').on('click', function(e) {
+        e.preventDefault();
+        const codice_prenotazione = $(this).data('codice-prenotazione');
+        const token = '{{ session.get('elimina_token') }}';
+
+        if (confirm('Sei sicuro di voler eliminare questa prenotazione?')) {
+            $.ajax({
+                url: `/elimina_prenotazione/${codice_prenotazione}`,
+                type: 'DELETE',
+                contentType: 'application/json',
+                data: JSON.stringify({ token: token }),
+                success: function(result) {
+                    alert(result.message);
+                    location.reload(); // Ricarica la pagina dopo l'eliminazione
+                },
+                error: function(xhr) {
+                    alert(xhr.responseJSON.message); // Mostra messaggio d'errore
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

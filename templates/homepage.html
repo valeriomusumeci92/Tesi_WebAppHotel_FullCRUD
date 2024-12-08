@@ -1,10 +1,64 @@
 {% extends 'base.html' %}
 
-{% block title %}Homepage - Hotel App{% endblock %}
+{% block title %}Homepage{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Benvenuto nel nostro Hotel</h1>
-    <p>Scopri le nostre camere e prenota il tuo soggiorno!</p>
+
+    <!-- Prima sezione: descrizione e immagine -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='images/hotel_image.jpg') }}" class="img-fluid" alt="Hotel Labellavita">
+        </div>
+        <div class="col-md-6">
+            <h2>Scopri il Nostro Hotel</h2>
+            <p>Benvenuti nel nostro hotel, dove il comfort e l'eleganza si incontrano. Offriamo una vasta gamma di camere, ognuna progettata per garantire il massimo del relax e della comodità. Che siate qui per affari o per piacere, noi ci prendiamo cura di ogni vostro bisogno.</p>
+        
+        </div>
+    </div>
+</div>
+    <!-- Carosello automatico di immagini -->
+     <h2 class="my-5 text-center">Scopri subito tutte le nostre camere!</h2>
+    <div id="roomCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="{{ url_for('static', filename='images/room1.jpg') }}" class="d-block w-100" alt="Camera 1">
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='images/room2.jpg') }}" class="d-block w-100" alt="Camera 2">
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='images/room3.jpg') }}" class="d-block w-100" alt="Camera 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='images/room4.jpg') }}" class="d-block w-100" alt="Camera 4">
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='images/room5.jpg') }}" class="d-block w-100" alt="Camera 5">
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='images/room6.jpg') }}" class="d-block w-100" alt="Camera 6">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Precedente</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Successivo</span>
+        </button>
+    </div>
+
+    <!-- Seconda sezione: descrizione e immagine -->
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Le Nostre Offerte</h2>
+            <p>Scopri le nostre offerte speciali per rendere il tuo soggiorno ancora più piacevole. Offriamo pacchetti vantaggiosi per famiglie, coppie e viaggiatori singoli. Prenota ora e approfitta dei nostri sconti esclusivi!</p>
+        </div>
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='images/special_offer.jpg') }}" class="img-fluid" alt="Offerte speciali">
+        </div>
+    </div>
 </div>
 {% endblock %}
