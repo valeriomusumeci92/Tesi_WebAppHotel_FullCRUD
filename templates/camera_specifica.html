@@ -1,230 +1,285 @@
-{% extends 'base.html' %}
-
-{% block title %}Prenotazione Camera{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Prenotazione Camera{% endblock %} {%
+block content %}
 <div class="container mt-5">
-    <h1 class="text-center">{{ camera.nome }}</h1>
-    <div class="text-center mb-4">
-        <img src="{{ url_for('static', filename=camera.immagine) }}" alt="{{ camera.nome }}" class="img-fluid" style="max-height: 300px; object-fit: cover;">
+  <h1 class="text-center">{{ camera.nome }}</h1>
+  <div class="text-center mb-4">
+    <img
+      src="{{ url_for('static', filename=camera.immagine) }}"
+      alt="{{ camera.nome }}"
+      class="img-fluid"
+      style="max-height: 300px; object-fit: cover"
+    />
+  </div>
+  <p class="text-center">{{ camera.descrizione }}</p>
+  <h2 class="text-center">Prezzo per notte: €{{ camera.prezzo }}</h2>
+
+  <form
+    id="prenotazioneForm"
+    method="POST"
+    action="{{ url_for('invia_prenotazione', camera_id=camera_id) }}"
+  >
+    <input type="hidden" name="token" value="{{ token }}" />
+
+    <div class="form-group">
+      <label for="nome">Nome</label>
+      <input
+        type="text"
+        id="nome"
+        name="nome"
+        placeholder="Nome"
+        required
+        class="form-control"
+      />
+      <div class="invalid-feedback" id="nomeError">Digitare solo lettere</div>
     </div>
-    <p class="text-center">{{ camera.descrizione }}</p>
-    <h2 class="text-center">Prezzo per notte: €{{ camera.prezzo }}</h2>
 
-    <!-- Form di prenotazione -->
-    <form id="prenotazioneForm" method="POST" action="{{ url_for('invia_prenotazione', camera_id=camera_id) }}">
-        <input type="hidden" name="token" value="{{ token }}">
+    <div class="form-group">
+      <label for="cognome">Cognome</label>
+      <input
+        type="text"
+        id="cognome"
+        name="cognome"
+        placeholder="Cognome"
+        required
+        class="form-control"
+      />
+      <div class="invalid-feedback" id="cognomeError">
+        Digitare solo lettere
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" placeholder="Nome" required class="form-control"> 
-            <div class="invalid-feedback" id="nomeError">Digitare solo lettere</div>
-        </div>
+    <div class="form-group">
+      <label for="checkin">Data di Check-in</label>
+      <input
+        type="date"
+        id="checkin"
+        name="checkin"
+        required
+        class="form-control"
+        onchange="calcolaPrezzo()"
+      />
+    </div>
 
-        
-        <div class="form-group">
-            <label for="cognome">Cognome</label>
-            <input type="text" id="cognome" name="cognome" placeholder="Cognome" required class="form-control">
-            <div class="invalid-feedback" id="cognomeError">Digitare solo lettere</div>
-        </div>
+    <div class="form-group">
+      <label for="checkout">Data di Check-out</label>
+      <input
+        type="date"
+        id="checkout"
+        name="checkout"
+        required
+        class="form-control"
+        onchange="calcolaPrezzo()"
+      />
+    </div>
 
+    <div class="form-group">
+      <label for="data_nascita">Data di Nascita</label>
+      <input
+        type="date"
+        id="data_nascita"
+        name="data_nascita"
+        required
+        class="form-control"
+        onchange="checkEta()"
+      />
+      <div class="invalid-feedback" id="etaError">
+        Devi avere almeno 18 anni per effettuare una prenotazione.
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label for="checkin">Data di Check-in</label>
-            <input type="date" id="checkin" name="checkin" required class="form-control" onchange="calcolaPrezzo()">
-        </div>
+    <div class="form-group">
+      <label for="numero_persone">Numero di Persone</label>
+      <input
+        type="number"
+        id="numero_persone"
+        name="numero_persone"
+        placeholder="Numero di persone"
+        required
+        class="form-control"
+        min="1"
+        max="3"
+        onchange="checkNumeroPersone()"
+      />
+      <div class="invalid-feedback" id="personeError">
+        Possono esserci da 1 a {{ camera.max_persone }} persone in questa
+        camera.
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label for="checkout">Data di Check-out</label>
-            <input type="date" id="checkout" name="checkout" required class="form-control" onchange="calcolaPrezzo()">
-        </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="Email"
+        required
+        class="form-control"
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="data_nascita">Data di Nascita</label>
-            <input type="date" id="data_nascita" name="data_nascita" required class="form-control" onchange="checkEta()">
-            <div class="invalid-feedback" id="etaError">Devi avere almeno 18 anni per effettuare una prenotazione.</div>
-        </div>
-
-        <div class="form-group">
-            <label for="numero_persone">Numero di Persone</label>
-            <input type="number" id="numero_persone" name="numero_persone" placeholder="Numero di persone" required class="form-control" min="1" max="3" onchange="checkNumeroPersone()">
-            <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
-        </div>
-
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Email" required class="form-control">
-        </div>
-
-        <h3 class="text-center my-3" id="prezzo_totale" style="display: none;">Prezzo Totale: €<span id="totale"></span></h3>
-        <div class="row">
-    
-        <button type="submit" class="btn btn-primary my-3 col-3">Conferma Prenotazione</button>
-        <div class="alert alert-danger col-6 mx-4" id="disponibilitaError" style="display: none;">Camera non disponibile nelle date selezionate, seleziona altre date.</div>
-        </div>
-        
-    </form>
+    <h3 class="text-center my-3" id="prezzo_totale" style="display: none">
+      Prezzo Totale: €<span id="totale"></span>
+    </h3>
+    <div class="row">
+      <button type="submit" class="btn btn-primary my-3 col-3">
+        Conferma Prenotazione
+      </button>
+      <div
+        class="alert alert-danger col-6 mx-4"
+        id="disponibilitaError"
+        style="display: none"
+      >
+        Camera non disponibile nelle date selezionate, seleziona altre date.
+      </div>
+    </div>
+  </form>
 </div>
 
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const cameraPrezzo = {{ camera.prezzo }};
-        const cameraId = {{ camera.id }};
-    
-        // Imposta la data minima di check-in
-        const oggi = new Date();
-        const dataOdierna = oggi.toISOString().split('T')[0];
-        document.getElementById('checkin').setAttribute('min', dataOdierna);
-    
-        // Gestisci la modifica delle date di check-in e check-out
-        document.getElementById('checkin').addEventListener('change', function() {
-            const checkinDate = new Date(this.value);
-            const checkoutMinDate = new Date(checkinDate);
-            checkoutMinDate.setDate(checkoutMinDate.getDate() + 1);
-            document.getElementById('checkout').setAttribute('min', checkoutMinDate.toISOString().split('T')[0]);
-            calcolaPrezzo();
-        });
-    
-        document.getElementById('checkout').addEventListener('change', calcolaPrezzo);
-    
-        const form = document.getElementById('prenotazioneForm');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Previene l'invio del modulo per il controllo della disponibilità
-    
-            const checkin = document.getElementById('checkin').value;
-            const checkout = document.getElementById('checkout').value;
-    
-            // Controlla la disponibilità della camera
-            fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.length > 0) {
-                        // Se ci sono date non disponibili, mostra l'errore
-                        document.getElementById('disponibilitaError').style.display = 'block';
-                        disableUnavailableDates(data); // Disabilita le date non disponibili
-    
-                        // Resetta i campi di check-in e check-out
-                        document.getElementById('checkin').value = '';
-                        document.getElementById('checkout').value = '';
-                    } else {
-                        // Nasconde l'errore se le date sono disponibili e invia il modulo
-                        document.getElementById('disponibilitaError').style.display = 'none';
-                        form.submit(); // Invia il modulo se disponibile
-                    }
-                })
-                .catch(error => {
-                    console.error('Si è verificato un errore:', error);
-                    document.getElementById('disponibilitaError').innerText = 'Si è verificato un errore nel recuperare le date.';
-                    document.getElementById('disponibilitaError').style.display = 'block';
-                });
-        });
+  document.addEventListener('DOMContentLoaded', function() {
+      const cameraPrezzo = {{ camera.prezzo }};
+      const cameraId = {{ camera.id }};
 
+      const oggi = new Date();
+      const dataOdierna = oggi.toISOString().split('T')[0];
+      document.getElementById('checkin').setAttribute('min', dataOdierna);
 
-        const nomeInput = document.getElementById('nome');
-        const nomeError = document.getElementById('nomeError');
-        const cognomeInput = document.getElementById('cognome');
-        const cognomeError = document.getElementById('cognomeError');
+      document.getElementById('checkin').addEventListener('change', function() {
+          const checkinDate = new Date(this.value);
+          const checkoutMinDate = new Date(checkinDate);
+          checkoutMinDate.setDate(checkoutMinDate.getDate() + 1);
+          document.getElementById('checkout').setAttribute('min', checkoutMinDate.toISOString().split('T')[0]);
+          calcolaPrezzo();
+      });
 
-        nomeInput.addEventListener('input', function() {
-            validateName(nomeInput, nomeError);
-        });
+      document.getElementById('checkout').addEventListener('change', calcolaPrezzo);
 
-        cognomeInput.addEventListener('input', function() {
-            validateName(cognomeInput, cognomeError);
-        });
+      const form = document.getElementById('prenotazioneForm');
+      form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const checkin = document.getElementById('checkin').value;
+          const checkout = document.getElementById('checkout').value;
 
-        function validateName(inputField, errorDiv) {
-            if (inputField.value.match(/[^A-Za-z\s]/g)) {
-                inputField.classList.add('is-invalid');
-                errorDiv.style.display = 'block';
-            } else {
-                inputField.classList.remove('is-invalid');
-                errorDiv.style.display = 'none';
-            }
-        }
+          fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`)
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  if (data.length > 0) {
+                      document.getElementById('disponibilitaError').style.display = 'block';
+                      disableUnavailableDates(data);
 
-        // Funzione per calcolare il prezzo
-        function calcolaPrezzo() {
-            const checkin = new Date(document.getElementById('checkin').value);
-            const checkout = new Date(document.getElementById('checkout').value);
-    
-            if (!isNaN(checkin) && !isNaN(checkout) && checkin < checkout) {
-                const giorni = (checkout - checkin) / (1000 * 60 * 60 * 24);
-                const totale = giorni * cameraPrezzo;
-    
-                document.getElementById('totale').textContent = totale.toFixed(2);
-                document.getElementById('prezzo_totale').style.display = 'block';
-            } else {
-                document.getElementById('prezzo_totale').style.display = 'none';
-            }
-        }
-    
-        // Funzione per disabilitare le date non disponibili
-        function disableUnavailableDates(unavailableDates) {
-            const checkinDateInputs = Array.from(document.querySelectorAll('[type="date"]'));
-            checkinDateInputs.forEach(input => {
-                input.value = '';  // Resetta le selezioni precedenti
-                input.setAttribute('min', dataOdierna);  // Assicurati che il minimo sia corretto
-                input.disabled = false;  // Abilita tutte le date inizialmente
-            });
-    
-            if (unavailableDates.length) {
-                unavailableDates.forEach(dateRange => {
-                    let start = new Date(dateRange.checkin);
-                    let end = new Date(dateRange.checkout);
-    
-                    while (start < end) {
-                        const formatted = start.toISOString().split('T')[0]; // Formatta in YYYY-MM-DD
-                        const inputField = document.querySelector(`input[type="date"][value="${formatted}"]`);
-                        if (inputField) {
-                            inputField.setAttribute('disabled', 'true');
-                        }
-                        start.setDate(start.getDate() + 1); // Passa al giorno successivo
-                    }
-                });
-            }
-        }
-    
-        // Funzione per controllare l'età
-        function checkEta() {
-            const dataNascita = new Date(document.getElementById('data_nascita').value);
-            const eta = (new Date() - dataNascita) / (1000 * 60 * 60 * 24 * 365);
-            const etaError = document.getElementById('etaError');
-    
-            if (eta < 18) {
-                document.getElementById('data_nascita').classList.add('is-invalid');
-                etaError.style.display = 'block';
-            } else {
-                document.getElementById('data_nascita').classList.remove('is-invalid');
-                etaError.style.display = 'none';
-            }
-        }
-        // Function to check the number of people
-        function checkNumeroPersone() {
-            const numeroPersone = parseInt(document.getElementById('numero_persone').value);
-            const personeError = document.getElementById('personeError');
+                      document.getElementById('checkin').value = '';
+                      document.getElementById('checkout').value = '';
+                  } else {
+                      document.getElementById('disponibilitaError').style.display = 'none';
+                      form.submit();
+                  }
+              })
+              .catch(error => {
+                  console.error('Si è verificato un errore:', error);
+                  document.getElementById('disponibilitaError').innerText = 'Si è verificato un errore nel recuperare le date.';
+                  document.getElementById('disponibilitaError').style.display = 'block';
+              });
+      });
 
-            if ((cameraId === 1 || cameraId === 4) && (numeroPersone < 1 || numeroPersone > 3) ||
-                (cameraId === 2 || cameraId === 5) && (numeroPersone < 1 || numeroPersone > 2) ||
-                (cameraId === 3 || cameraId === 6) && (numeroPersone !== 1)) {
-                document.getElementById('numero_persone').classList.add('is-invalid');
-                personeError.style.display = 'block';
-            } else {
-                document.getElementById('numero_persone').classList.remove('is-invalid');
-                personeError.style.display = 'none';
-            }
-        }
+      const nomeInput = document.getElementById('nome');
+      const nomeError = document.getElementById('nomeError');
+      const cognomeInput = document.getElementById('cognome');
+      const cognomeError = document.getElementById('cognomeError');
 
-        // Attach event listeners for age and number of people validation
-        document.getElementById('data_nascita').addEventListener('change', checkEta);
-        document.getElementById('numero_persone').addEventListener('change', checkNumeroPersone);
-    });
+      nomeInput.addEventListener('input', function() {
+          validateName(nomeInput, nomeError);
+      });
+
+      cognomeInput.addEventListener('input', function() {
+          validateName(cognomeInput, cognomeError);
+      });
+
+      function validateName(inputField, errorDiv) {
+          if (inputField.value.match(/[^A-Za-z\s]/g)) {
+              inputField.classList.add('is-invalid');
+              errorDiv.style.display = 'block';
+          } else {
+              inputField.classList.remove('is-invalid');
+              errorDiv.style.display = 'none';
+          }
+      }
+
+      function calcolaPrezzo() {
+          const checkin = new Date(document.getElementById('checkin').value);
+          const checkout = new Date(document.getElementById('checkout').value);
+          if (!isNaN(checkin) && !isNaN(checkout) && checkin < checkout) {
+              const giorni = (checkout - checkin) / (1000 * 60 * 60 * 24);
+              const totale = giorni * cameraPrezzo;
+
+              document.getElementById('totale').textContent = totale.toFixed(2);
+              document.getElementById('prezzo_totale').style.display = 'block';
+          } else {
+              document.getElementById('prezzo_totale').style.display = 'none';
+          }
+      }
+
+      function disableUnavailableDates(unavailableDates) {
+          const checkinDateInputs = Array.from(document.querySelectorAll('[type="date"]'));
+          checkinDateInputs.forEach(input => {
+              input.value = '';
+              input.setAttribute('min', dataOdierna);
+              input.disabled = false;
+          });
+
+          if (unavailableDates.length) {
+              unavailableDates.forEach(dateRange => {
+                  let start = new Date(dateRange.checkin);
+                  let end = new Date(dateRange.checkout);
+
+                  while (start < end) {
+                      const formatted = start.toISOString().split('T')[0];
+                      const inputField = document.querySelector(`input[type="date"][value="${formatted}"]`);
+                      if (inputField) {
+                          inputField.setAttribute('disabled', 'true');
+                      }
+                      start.setDate(start.getDate() + 1);
+                  }
+              });
+          }
+      }
+
+      function checkEta() {
+          const dataNascita = new Date(document.getElementById('data_nascita').value);
+          const eta = (new Date() - dataNascita) / (1000 * 60 * 60 * 24 * 365);
+          const etaError = document.getElementById('etaError');
+
+          if (eta < 18) {
+              document.getElementById('data_nascita').classList.add('is-invalid');
+              etaError.style.display = 'block';
+          } else {
+              document.getElementById('data_nascita').classList.remove('is-invalid');
+              etaError.style.display = 'none';
+          }
+      }
+
+      function checkNumeroPersone() {
+          const numeroPersone = parseInt(document.getElementById('numero_persone').value);
+          const personeError = document.getElementById('personeError');
+
+          if ((cameraId === 1 || cameraId === 4) && (numeroPersone < 1 || numeroPersone > 3) ||
+              (cameraId === 2 || cameraId === 5) && (numeroPersone < 1 || numeroPersone > 2) ||
+              (cameraId === 3 || cameraId === 6) && (numeroPersone !== 1)) {
+              document.getElementById('numero_persone').classList.add('is-invalid');
+              personeError.style.display = 'block';
+          } else {
+              document.getElementById('numero_persone').classList.remove('is-invalid');
+              personeError.style.display = 'none';
+          }
+      }
+
+      document.getElementById('data_nascita').addEventListener('change', checkEta);
+      document.getElementById('numero_persone').addEventListener('change', checkNumeroPersone);
+  });
 </script>
-
 {% endblock %}

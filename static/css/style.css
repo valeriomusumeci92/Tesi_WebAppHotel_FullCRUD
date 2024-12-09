@@ -10,28 +10,28 @@ main {
 }
 
 
-.navbar-bg {
-    background-size: cover;   /* Assicura che l'immagine di sfondo copra completamente il contenitore */
-    background-position: center; /* Centra l'immagine di sfondo */
-    height: 300px; /* Altezza della navbar */
-    width: 100%;
-    position: absolute; /* Posizionamento assoluto per sovrapporsi alla navbar */
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 0; /* Fa sì che l'immagine sia sotto alla navbar */
-}
 
 .navbar {
-    position: relative; /* Posiziona la navbar relativa al suo contenitore */
-    z-index: 1; /* Assicura che il contenuto della navbar stia sopra l'immagine di sfondo */
+    position: relative;
+    z-index: 1;
+    background-image: linear-gradient(to right, #FF6F61, #6A5ACD);
 }
 
+
+.navbar-nav .nav-link {
+    color: #ffffff !important;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: yellow !important;
+    text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.8);
+}
 
 .img-container {
     width: 100%;
-    max-width: 600px; /* Modifica a piacere */
-    height: 300px; /* Modifica a piacere */
+    max-width: 600px;
+    height: 300px;
     overflow: hidden;
     position: relative;
 }
@@ -45,45 +45,54 @@ main {
     min-height: 100%;
     object-fit: cover;
 }
-/* Stile per i messaggi flash */
+
 .flashes {
-    margin: 20px 0; /* Margine tra i messaggi e gli altri elementi */
+    margin: 20px 0;
 }
 
 .alert {
-    padding: 15px; /* Padding all'interno dell'alert */
-    margin: 10px 0; /* Margine tra gli alert */
-    border: none; /* Rimuove il bordo predefinito */
-    border-radius: 5px; /* Angoli arrotondati */
-    transition: opacity 0.5s ease; /* Transizione fluida per l'opacità */
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    transition: opacity 0.5s ease;
 }
 
 .alert-success {
-    background-color: #28a745; /* Colore verde per i messaggi di successo */
-    color: white; /* Testo bianco */
+    background-color: #28a745;
+    color: white;
 }
 
 .alert-danger {
-    background-color: #dc3545; /* Colore rosso per i messaggi di errore */
-    color: white; /* Testo bianco */
+    background-color: #dc3545;
+    color: white;
 }
 .alert-success {
-    background-color: #28a745; /* Colore verde */
+    background-color: #28a745;
 }
 
-/* Rimuove il pallino delle liste */
 .flashes ul {
-    list-style-type: none; /* Rimuove il pallino */
-    padding: 0; /* Rimuove il padding */
+    list-style-type: none;
+    padding: 0;
 }
 
 .flashes li {
     margin: 5px 0; /* Spaziatura tra i messaggi */
 }
 
- /* CSS personalizzato per controllare la dimensione delle immagini nel carosello */
+
  .carousel-item img {
-    max-height: 400px; /* Imposta un'altezza massima per le immagini */
-    width: auto; /* Larghezza automatica per mantenere le proporzioni */
-    margin: 0 auto; /* Centra le immagini */
+    max-height: 400px;
+    width: auto;
+    margin: 0 auto;
+}
+
+.separator {
+    height: 20px; /* Altezza del div separatore */
+    background-color: transparent; /* Colore di sfondo trasparente */
+}
+.divider {
+    height: 2px;  /* Altezza della linea divider */
+    background-color: black; /* Colore della linea */
+    margin: 10px 0; /* Margine sopra e sotto la linea */
 }

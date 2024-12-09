@@ -108,24 +108,24 @@
     function disableUnavailableDates(unavailableDates) {
         const checkinDateInputs = Array.from(document.querySelectorAll('[type="date"]'));
         checkinDateInputs.forEach(input => {
-            input.value = '';  // Resetta eventuali selezioni precedenti
-            input.setAttribute('min', dataOdierna);  // Assicura che il minimo sia affidabile
-            input.disabled = false;  // Riabilita tutte le date inizialmente
+            input.value = '';
+            input.setAttribute('min', dataOdierna);
+            input.disabled = false;
         });
 
         if (unavailableDates.length) {
             unavailableDates.forEach(dateRange => {
-                // Disabilitiamo i giorni in base alle date non disponibili
+
                 let start = new Date(dateRange.checkin);
                 let end = new Date(dateRange.checkout);
 
                 while (start < end) {
-                    const formatted = start.toISOString().split('T')[0]; // Format YYYY-MM-DD
+                    const formatted = start.toISOString().split('T')[0];
                     const inputField = document.querySelector(`input[type="date"][value="${formatted}"]`);
                     if (inputField) {
                         inputField.setAttribute('disabled', 'true');
                     }
-                    start.setDate(start.getDate() + 1); // Passa alla data successiva
+                    start.setDate(start.getDate() + 1);
                 }
             });
         }
@@ -144,23 +144,23 @@
 
     const form = document.getElementById('prenotazioneForm');
     form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Ferma l'invio del modulo per il controllo della disponibilità
+        event.preventDefault();
 
         const checkin = document.getElementById('checkin').value;
         const checkout = document.getElementById('checkout').value;
 
-        // Controllo disponibilità della camera
+
         fetch(`/api/disponibilita_camera/{{ camera.id }}?checkin=${checkin}&checkout=${checkout}`)
             .then(response => response.json())
             .then(data => {
-                // Verifica se le date non disponibili ci sono nella risposta
+
                 if (data.length > 0) {
                     document.getElementById('disponibilitaError').style.display = 'block';
-                    disableUnavailableDates(data); // Disabilita le date non disponibili
-                    return; // Ferma l'invio se la camera non è disponibile
+                    disableUnavailableDates(data);
+                    return;
                 } else {
-                    document.getElementById('disponibilitaError').style.display = 'none'; // Nasconde l'errore se disponibile
-                    form.submit(); // Invia il modulo se disponibile
+                    document.getElementById('disponibilitaError').style.display = 'none';
+                    form.submit();
                 }
             })
             .catch(error => {

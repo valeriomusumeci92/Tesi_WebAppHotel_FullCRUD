@@ -21,7 +21,7 @@
 
 <script>
     document.getElementById('login-form').addEventListener('submit', function(e) {
-        e.preventDefault(); // Impedire l'invio del modulo in modo standard
+        e.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
@@ -29,22 +29,22 @@
         fetch('/api/login', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json' // Specifichiamo che inviamo JSON
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: username, password: password }) // Convertiamo i dati in JSON
+            body: JSON.stringify({ username: username, password: password })
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Login fallito'); // Lancia un errore se la risposta non è OK
+                throw new Error('Login fallito');
             }
-            return response.json(); // Restituisce la risposta JSON se OK
+            return response.json();
         })
         .then(data => {
             if (data.success) {
-                // Reindirizza se il login ha successo
+
                 window.location.href = '{{ url_for("gestione") }}';
             } else {
-                // Mostra il messaggio di errore
+
                 document.getElementById('login-message').innerText = data.message;
             }
         })
