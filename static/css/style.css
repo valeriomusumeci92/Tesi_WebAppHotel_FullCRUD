@@ -3,6 +3,7 @@
  html,body {
     min-height: 100vh;
     margin: 0;
+
 }
 main {
     flex: 1;
@@ -78,4 +79,11 @@ main {
 
 .flashes li {
     margin: 5px 0; /* Spaziatura tra i messaggi */
+}
+
+ /* CSS personalizzato per controllare la dimensione delle immagini nel carosello */
+ .carousel-item img {
+    max-height: 400px; /* Imposta un'altezza massima per le immagini */
+    width: auto; /* Larghezza automatica per mantenere le proporzioni */
+    margin: 0 auto; /* Centra le immagini */
 }

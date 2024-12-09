@@ -10,6 +10,8 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
+from sqlalchemy.sql.expression import and_, or_
+   
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -230,13 +232,15 @@ def invia_prenotazione(camera_id):
     flash('Prenotazione completata con successo!', 'success')
     return redirect(url_for('pagina_conferma', codice_prenotazione=codice_prenotazione))
 
-
 @app.route('/api/disponibilita_camera/<int:camera_id>', methods=['GET'])
 def check_disponibilita_camera(camera_id):
     checkin = request.args.get('checkin')
     checkout = request.args.get('checkout')
 
-    # Esegui una query per trovare tutte le prenotazioni di questa camera
+    if not checkin or not checkout:
+        return jsonify({"error": "Invalid dates."}), 400
+
+    # Query for overlapping bookings
     prenotazioni = Prenotazione.query.filter(
         Prenotazione.camera_id == camera_id,
         or_(
@@ -244,15 +248,17 @@ def check_disponibilita_camera(camera_id):
         )
     ).all()
 
-    # Se ci sono prenotazioni che sovrappongono le date, ritorna queste date come non disponibili
-    unavailable_dates = []
-    if prenotazioni:
-        unavailable_dates.append({
-            "checkin": prenotazione.checkin,
-            "checkout": prenotazione.checkout
-        } for prenotazione in prenotazioni)
+    # If no overlapping bookings, return an empty list 
+    if not prenotazioni:
+        return jsonify([]), 200  # 200 OK for success
 
-    return jsonify(unavailable_dates)
+    # Otherwise, return the unavailable date ranges
+    unavailable_dates = [{
+        "checkin": prenotazione.checkin.strftime('%Y-%m-%d'),
+        "checkout": prenotazione.checkout.strftime('%Y-%m-%d')
+    } for prenotazione in prenotazioni]
+
+    return jsonify(unavailable_dates), 200 
 
 @app.route('/conferma_prenotazione/<codice_prenotazione>')
 def pagina_conferma(codice_prenotazione):
