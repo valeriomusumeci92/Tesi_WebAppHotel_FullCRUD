@@ -5,10 +5,6 @@
     margin: 0;
 
 }
-main {
-    flex: 1;
-}
-
 
 
 .navbar {
@@ -77,7 +73,7 @@ main {
 }
 
 .flashes li {
-    margin: 5px 0; /* Spaziatura tra i messaggi */
+    margin: 5px 0;
 }
 
 
@@ -87,12 +83,29 @@ main {
     margin: 0 auto;
 }
 
-.separator {
-    height: 20px; /* Altezza del div separatore */
-    background-color: transparent; /* Colore di sfondo trasparente */
+.separatore {
+    height: 20px;
+    background-color: transparent;
 }
-.divider {
-    height: 2px;  /* Altezza della linea divider */
-    background-color: black; /* Colore della linea */
-    margin: 10px 0; /* Margine sopra e sotto la linea */
+.divisore {
+    height: 2px;
+    background-color: black;
+    margin: 10px 0;
 }
+
+.flatpickr-disabled {
+    position: relative;
+}
+
+.flatpickr-disabled::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px; /* Spessore della linea */
+    background-color: red; /* Colore della linea */
+    transform: translateY(-50%); /* Centra la linea verticalmente */
+    z-index: 10; /* Assicura che la linea sia sopra il testo della data */
+}
+

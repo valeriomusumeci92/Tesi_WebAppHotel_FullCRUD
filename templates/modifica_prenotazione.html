@@ -5,19 +5,21 @@
 {% block content %}
 <div class="container mt-5">
     <h1>Modifica Prenotazione</h1>
-    <form action="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" method="POST">
+    <form id="prenotazioneForm" action="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" method="POST">
         <input type="hidden" name="token" value="{{ token }}">
-
+        
         <div class="form-group">
             <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" placeholder="Nome" value="{{ prenotazione.nome }}" required class="form-control">
+            <input type="text" id="nome" name="nome" placeholder="Nome" value="{{ prenotazione.nome }}" required class="form-control" pattern="[a-zA-Z]+" />
+            <div class="invalid-feedback" id="nomeError" style="display: none;">Digitare solo lettere</div>
         </div>
 
         <div class="form-group">
             <label for="cognome">Cognome</label>
-            <input type="text" id="cognome" name="cognome" placeholder="Cognome" value="{{ prenotazione.cognome }}" required class="form-control">
+            <input type="text" id="cognome" name="cognome" placeholder="Cognome" value="{{ prenotazione.cognome }}" required class="form-control" pattern="[a-zA-Z]+" />
+            <div class="invalid-feedback" id="cognomeError" style="display: none;">Digitare solo lettere</div>
         </div>
-
+       
         <div class="form-group">
             <label for="checkin">Data di Check-in</label>
             <input type="date" id="checkin" name="checkin" value="{{ prenotazione.checkin }}" required class="form-control" onchange="calcolaPrezzo()">
@@ -40,20 +42,74 @@
             <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
         </div>
 
+
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Email" value="{{ prenotazione.email }}" required class="form-control">
+            <input type="email" id="email" name="email" placeholder="Email" value="{{ prenotazione.email }}" required class="form-control" />
+            <div class="invalid-feedback" id="emailError" style="display: none;">Email non valida</div>
         </div>
+        <div class="form-group">
 
         <h3 class="text-center my-3" id="prezzo_totale" style="display: none;">Prezzo Totale: €<span id="totale"></span></h3>
         <button type="submit" class="btn btn-primary my-3">Conferma Modifica</button>
     </form>
 </div>
     <script>
+        // STESSE LOGICHE E CONTROLLI PRESENTI NEL TEMPLATE CAMERA_SPECIFICA 
+
+    function validateName(input) {
+        const pattern = /^[A-Za-z]+$/;
+        const errorElement = document.getElementById('nomeError');
+        if (!pattern.test(input.value)) {
+            errorElement.style.display = 'block';
+        } else {
+            errorElement.style.display = 'none';
+        }
+    }
+    
+    function validateSurname(input) {
+        const pattern = /^[A-Za-z]+$/;
+        const errorElement = document.getElementById('cognomeError');
+        if (!pattern.test(input.value)) {
+            errorElement.style.display = 'block';
+        } else {
+            errorElement.style.display = 'none';
+        }
+    }
+    
+    function validateEmail(input) {
+        const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const errorElement = document.getElementById('emailError');
+        if (!pattern.test(input.value)) {
+            errorElement.style.display = 'block';
+        } else {
+            errorElement.style.display = 'none';
+        }
+    }
+    
+
+    document.getElementById('nome').addEventListener('input', function() {
+        validateName(this);
+    });
+    
+    document.getElementById('cognome').addEventListener('input', function() {
+        validateSurname(this);
+    });
+    
+    document.getElementById('email').addEventListener('input', function() {
+        validateEmail(this);
+    });
+    
+    document.getElementById('prenotazioneForm').onsubmit = function() {
+        const nomeValid = /^[A-Za-z]+$/.test(document.getElementById('nome').value);
+        const cognomeValid = /^[A-Za-z]+$/.test(document.getElementById('cognome').value);
+        const emailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(document.getElementById('email').value);
+        
+        return nomeValid && cognomeValid && emailValid;
+    };
     const cameraPrezzo = {{ camera.prezzo }};
     const cameraId = {{ camera.id }};
-    document.getElementById('numero_persone').setAttribute('max', (cameraId === 1 || cameraId === 4) ? 3 : (cameraId === 2 || cameraId === 5) ? 2 : 1); // Imposta il max in base alla camera
-
+    
     function checkEta() {
         const dataNascita = new Date(document.getElementById('data_nascita').value);
         const eta = (new Date() - dataNascita) / (1000 * 60 * 60 * 24 * 365);
@@ -82,6 +138,8 @@
         }
     }
 
+
+    document.getElementById('numero_persone').setAttribute('max', (cameraId === 1 || cameraId === 4) ? 3 : (cameraId === 2 || cameraId === 5) ? 2 : 1);
 
     function checkNumeroPersone() {
         const numeroPersone = parseInt(document.getElementById('numero_persone').value);
@@ -153,6 +211,8 @@
         fetch(`/api/disponibilita_camera/{{ camera.id }}?checkin=${checkin}&checkout=${checkout}`)
             .then(response => response.json())
             .then(data => {
+
+                const unavailableDates = data;
 
                 if (data.length > 0) {
                     document.getElementById('disponibilitaError').style.display = 'block';

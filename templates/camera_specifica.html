@@ -3,85 +3,45 @@ block content %}
 <div class="container mt-5">
   <h1 class="text-center">{{ camera.nome }}</h1>
   <div class="text-center mb-4">
-    <img
-      src="{{ url_for('static', filename=camera.immagine) }}"
-      alt="{{ camera.nome }}"
-      class="img-fluid"
-      style="max-height: 300px; object-fit: cover"
-    />
+    <img src="{{ url_for('static', filename=camera.immagine) }}" class="img-fluid"style="max-height: 300px; object-fit: cover"/>
   </div>
   <p class="text-center">{{ camera.descrizione }}</p>
   <h2 class="text-center">Prezzo per notte: €{{ camera.prezzo }}</h2>
 
-  <form
-    id="prenotazioneForm"
-    method="POST"
-    action="{{ url_for('invia_prenotazione', camera_id=camera_id) }}"
-  >
+  {#Form per la prenotazione con id per essere richiamato nel js e method post che invia i dati dei campi alla rotta parametrica con l'id specifico della camera #}
+  <form id="prenotazioneForm" method="POST" action="{{ url_for('invia_prenotazione', camera_id=camera_id) }}">
     <input type="hidden" name="token" value="{{ token }}" />
-
+    
     <div class="form-group">
       <label for="nome">Nome</label>
-      <input
-        type="text"
-        id="nome"
-        name="nome"
-        placeholder="Nome"
-        required
-        class="form-control"
-      />
-      <div class="invalid-feedback" id="nomeError">Digitare solo lettere</div>
-    </div>
+      <input type="text" id="nome" name="nome" placeholder="Nome" required class="form-control" pattern="[a-zA-Z]+" />
+      <div class="invalid-feedback" id="nomeError" style="display: none;">Digitare solo lettere</div>
+  </div>
 
     <div class="form-group">
-      <label for="cognome">Cognome</label>
-      <input
-        type="text"
-        id="cognome"
-        name="cognome"
-        placeholder="Cognome"
-        required
-        class="form-control"
-      />
-      <div class="invalid-feedback" id="cognomeError">
-        Digitare solo lettere
-      </div>
+        <label for="cognome">Cognome</label>
+        <input type="text" id="cognome" name="cognome" placeholder="Cognome" required class="form-control" pattern="[a-zA-Z]+" />
+        <div class="invalid-feedback" id="cognomeError" style="display: none;">Digitare solo lettere</div>
     </div>
+
 
     <div class="form-group">
       <label for="checkin">Data di Check-in</label>
-      <input
-        type="date"
-        id="checkin"
-        name="checkin"
-        required
-        class="form-control"
-        onchange="calcolaPrezzo()"
-      />
-    </div>
+      <input type="text" id="checkin" name="checkin" required class="form-control" />
+  </div>
 
-    <div class="form-group">
+  
+  <div class="form-group">
       <label for="checkout">Data di Check-out</label>
-      <input
-        type="date"
-        id="checkout"
-        name="checkout"
-        required
-        class="form-control"
-        onchange="calcolaPrezzo()"
-      />
-    </div>
+      <input type="text" id="checkout" name="checkout" required class="form-control" />
+  </div>
+  
+  <div id="error-message" style="color: red; display: none;"></div>
+  
 
     <div class="form-group">
       <label for="data_nascita">Data di Nascita</label>
-      <input
-        type="date"
-        id="data_nascita"
-        name="data_nascita"
-        required
-        class="form-control"
-        onchange="checkEta()"
-      />
+      <input type="date"id="data_nascita"name="data_nascita"required class="form-control"onchange="checkEta()" />
       <div class="invalid-feedback" id="etaError">
         Devi avere almeno 18 anni per effettuare una prenotazione.
       </div>
@@ -89,34 +49,16 @@ block content %}
 
     <div class="form-group">
       <label for="numero_persone">Numero di Persone</label>
-      <input
-        type="number"
-        id="numero_persone"
-        name="numero_persone"
-        placeholder="Numero di persone"
-        required
-        class="form-control"
-        min="1"
-        max="3"
-        onchange="checkNumeroPersone()"
-      />
-      <div class="invalid-feedback" id="personeError">
-        Possono esserci da 1 a {{ camera.max_persone }} persone in questa
-        camera.
-      </div>
-    </div>
+      <input type="number" id="numero_persone" name="numero_persone" placeholder="Numero di persone" required class="form-control" min="1" max="3" onchange="checkNumeroPersone()">
+      <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
+  </div>
 
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="Email"
-        required
-        class="form-control"
-      />
-    </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="Email" required class="form-control" />
+    <div class="invalid-feedback" id="emailError" style="display: none;">Email non valida</div>
+</div>
+
 
     <h3 class="text-center my-3" id="prezzo_totale" style="display: none">
       Prezzo Totale: €<span id="totale"></span>
@@ -137,118 +79,228 @@ block content %}
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const cameraPrezzo = {{ camera.prezzo }};
-      const cameraId = {{ camera.id }};
+  // recupero salvandole nelle seguenti variabili prezzo ed id della camera cosi da poterle usare nelle successive logiche e funzioni
+const cameraPrezzo = {{ camera.prezzo }};
+const cameraId = {{ camera.id }};
 
-      const oggi = new Date();
-      const dataOdierna = oggi.toISOString().split('T')[0];
-      document.getElementById('checkin').setAttribute('min', dataOdierna);
+// controllo su date e le loro disponibilità
+document.addEventListener('DOMContentLoaded', async function() {
+  const cameraId = {{ camera.id }};
+  const today = new Date();
 
+  document.getElementById('checkin').addEventListener('focus', async function() {
+      await disableDatesOnPageLoad(cameraId, today);
+  });
+
+  document.getElementById('checkout').addEventListener('focus', async function() {
+      await disableDatesOnPageLoad(cameraId, today);
+  });
+
+  // Inizializza Flatpickr per Check-in
+  flatpickr("#checkin", {
+      minDate: "today",
+      onChange: function(selectedDates) {
+          if (selectedDates.length > 0) {
+              // Imposta la data di checkout un giorno dopo il check-in selezionato
+              const checkinDate = selectedDates[0];
+              const checkoutDate = new Date(checkinDate);
+              checkoutDate.setDate(checkinDate.getDate() + 1); // Imposta la data di checkout per un giorno dopo
+
+              // Aggiorna Flatpickr per il checkout con la nuova data minima
+              flatpickr("#checkout", {
+                  minDate: checkoutDate.toISOString().split('T')[0], // Imposta la nuova data minima di checkout
+                  disable: [] // Pulisci eventuali disabilitazioni precedenti
+              });
+
+              // Se non è stata selezionata una data di checkout precedente
+              if (!document.getElementById('checkout').value || document.getElementById('checkout').value < checkoutDate.toISOString().split('T')[0]) {
+                  document.getElementById('checkout').value = checkoutDate.toISOString().split('T')[0]; // Seleziona automaticamente la data di checkout
+              }
+          }
+      }
+  });
+
+  // Inizializza Flatpickr per il Checkout
+  flatpickr("#checkout", {
+      minDate: new Date().toISOString().split('T')[0]
+  });
+});
+
+async function disableDatesOnPageLoad(cameraId, today) {
+  try {
+      const unavailableDates = await getUnavailableDates(cameraId, today.toISOString().split('T')[0], null);
+      disableUnavailableDates(unavailableDates);
+  } catch (error) {
+      console.error("Errore nella richiesta delle date non disponibili: ", error);
+  }
+}
+
+async function getUnavailableDates(cameraId, checkin, checkout) {
+  const response = await fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`);
+  if (response.ok) {
+      return await response.json();
+  } else {
+      throw new Error("Errore nel recuperare le date non disponibili");
+  }
+}
+
+function disableUnavailableDates(unavailableDates) {
+  let disabledDates = [];
+  unavailableDates.forEach(date => {
+      const fromDate = new Date(date.checkin);
+      const toDate = new Date(date.checkout);
+      for (let d = fromDate; d <= toDate; d.setDate(d.getDate() + 1)) {
+          disabledDates.push(new Date(d).toISOString().split('T')[0]);
+      }
+  });
+
+  flatpickr("#checkin", {
+      minDate: "today",
+      disable: disabledDates
+  });
+
+  flatpickr("#checkout", {
+      minDate: new Date().toISOString().split('T')[0],
+      disable: disabledDates
+  });
+}
+
+document.getElementById('checkin').addEventListener('change', validateDateRange);
+document.getElementById('checkout').addEventListener('change', validateDateRange);
+
+document.getElementById('prenotazioneForm').addEventListener('submit', async function(event) {
+  const checkinDate = document.getElementById('checkin').value;
+  const checkoutDate = document.getElementById('checkout').value;
+
+  if (!await validateDateRange() || !checkinDate || !checkoutDate) {
+      event.preventDefault();
+  }
+});
+
+async function validateDateRange() {
+  const checkinDate = document.getElementById('checkin').value;
+  const checkoutDate = document.getElementById('checkout').value;
+  const errorMessage = document.getElementById('error-message');
+
+  errorMessage.style.display = "none";
+  errorMessage.innerText = "";
+
+  if (checkinDate && checkoutDate) {
+      const unavailableDates = await getUnavailableDates(cameraId, checkinDate, checkoutDate);
+      if (unavailableDates.length > 0) {
+          errorMessage.innerText = "Date selezionate non valide. Selezionare date valide.";
+          errorMessage.style.display = "block";
+          document.getElementById('checkin').value = '';
+          document.getElementById('checkout').value = '';
+          return false; 
+      }
+      return true;
+  }
+  return false;  
+}
+
+
+
+
+// CONTROLLO SUI CAMPI NOME,COGNOME ED EMAIL CON REGEX E DISPLAY O MENO DEL MESSAGGIO DI ERRORE SE IL VALORE DELL'INPUT NON MATCHA IL PATTERN DELLA REGEX
+     function validateName(input) {
+      const pattern = /^[A-Za-z]+$/;
+      const errorElement = document.getElementById('nomeError');
+      if (!pattern.test(input.value)) {
+          errorElement.style.display = 'block';
+      } else {
+          errorElement.style.display = 'none';
+      }
+  }
+
+  function validateSurname(input) {
+      const pattern = /^[A-Za-z]+$/;
+      const errorElement = document.getElementById('cognomeError');
+      if (!pattern.test(input.value)) {
+          errorElement.style.display = 'block';
+      } else {
+          errorElement.style.display = 'none';
+      }
+  }
+  
+  function validateEmail(input) {
+      const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const errorElement = document.getElementById('emailError');
+      if (!pattern.test(input.value)) {
+          errorElement.style.display = 'block';
+      } else {
+          errorElement.style.display = 'none';
+      }
+  }
+
+  //catturo i campi di input con i relativi id aggiungo un ascoltatore di eventi passo come parametri evento e funzione da far scattare con all'interno
+  //come corpo la chiamate di funzione di validazione di ogni specifico campo
+  document.getElementById('nome').addEventListener('input', function() {
+      validateName(this);
+  });
+  
+  document.getElementById('cognome').addEventListener('input', function() {
+      validateSurname(this);
+  });
+  
+  document.getElementById('email').addEventListener('input', function() {
+      validateEmail(this);
+  });
+  
+  // qua catturo l'evento di submit del form con id prenotazioneForm e mi assicuro i dati siano validi
+  document.getElementById('prenotazioneForm').onsubmit = function() {
+      const nomeValid = /^[A-Za-z]+$/.test(document.getElementById('nome').value);
+      const cognomeValid = /^[A-Za-z]+$/.test(document.getElementById('cognome').value);
+      const emailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(document.getElementById('email').value);
+      
+      return nomeValid && cognomeValid && emailValid;
+  };
+
+
+
+
+// funzione che mi calcola il prezzo finale in base alle date selezionate
+function calcolaPrezzo() {
+     const checkin = new Date(document.getElementById('checkin').value);
+     const checkout = new Date(document.getElementById('checkout').value);
+       if (!isNaN(checkin) && !isNaN(checkout) && checkin < checkout) {
+          const giorni = (checkout - checkin) / (1000 * 60 * 60 * 24);
+          const totale = giorni * cameraPrezzo;
+
+          document.getElementById('totale').textContent = totale.toFixed(2);
+          document.getElementById('prezzo_totale').style.display = 'block';
+         }
+        else {
+      document.getElementById('prezzo_totale').style.display = 'none';
+      }
+    }
+
+
+    //ricatturo il campo input gli aggiungo un ascoltatore di eventi a cui passo l'evento change che voglio fare scattare e una funziona anonima
       document.getElementById('checkin').addEventListener('change', function() {
+        //nel corpo della funzione creo un'altra istanza della classe date e gli dico di questo oggetto di questa istanza che ha scatenato l'evento
+        //ritornami il valore utilizzato nel campo input
           const checkinDate = new Date(this.value);
+          // creo un altro oggetto di classe Date e come argomento gli passo proprio il valore utilizzato nel campo input checkin quindi la variabile in cui
+          // l'ho "racchiuso" prima
           const checkoutMinDate = new Date(checkinDate);
+          // a questo punto setto il valore del checkout al valore della data selezionata nel campo input + 1
           checkoutMinDate.setDate(checkoutMinDate.getDate() + 1);
           document.getElementById('checkout').setAttribute('min', checkoutMinDate.toISOString().split('T')[0]);
-          calcolaPrezzo();
+          // e richiamo infine la funzione calcola prezzo cosi che faccia vedere al cliente subito il prezzo totale in base alle date selezionate
+          calcolaPrezzo()
+
       });
 
-      document.getElementById('checkout').addEventListener('change', calcolaPrezzo);
+  // richiamo la funzione sul campo di check out
+   document.getElementById('checkout').addEventListener('change', calcolaPrezzo);
 
-      const form = document.getElementById('prenotazioneForm');
-      form.addEventListener('submit', function(event) {
-          event.preventDefault();
-          const checkin = document.getElementById('checkin').value;
-          const checkout = document.getElementById('checkout').value;
+// creo un'istanza della classe Date che mi ottimizza la manipolazione di date ed orari mi restituisce data e orario locali
+//col metodo .slice ritornami soltanto gli elementi da posizione 0 fino a quello in posizione 10 della stringa inclusi i due estremi
+// ottengo cosi la dieta odierna nel formato YYYY-MM-DD
+  const dataOdierna = new Date().toISOString().slice(0, 10);
 
-          fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`)
-              .then(response => {
-                  if (!response.ok) {
-                      throw new Error('Network response was not ok');
-                  }
-                  return response.json();
-              })
-              .then(data => {
-                  if (data.length > 0) {
-                      document.getElementById('disponibilitaError').style.display = 'block';
-                      disableUnavailableDates(data);
-
-                      document.getElementById('checkin').value = '';
-                      document.getElementById('checkout').value = '';
-                  } else {
-                      document.getElementById('disponibilitaError').style.display = 'none';
-                      form.submit();
-                  }
-              })
-              .catch(error => {
-                  console.error('Si è verificato un errore:', error);
-                  document.getElementById('disponibilitaError').innerText = 'Si è verificato un errore nel recuperare le date.';
-                  document.getElementById('disponibilitaError').style.display = 'block';
-              });
-      });
-
-      const nomeInput = document.getElementById('nome');
-      const nomeError = document.getElementById('nomeError');
-      const cognomeInput = document.getElementById('cognome');
-      const cognomeError = document.getElementById('cognomeError');
-
-      nomeInput.addEventListener('input', function() {
-          validateName(nomeInput, nomeError);
-      });
-
-      cognomeInput.addEventListener('input', function() {
-          validateName(cognomeInput, cognomeError);
-      });
-
-      function validateName(inputField, errorDiv) {
-          if (inputField.value.match(/[^A-Za-z\s]/g)) {
-              inputField.classList.add('is-invalid');
-              errorDiv.style.display = 'block';
-          } else {
-              inputField.classList.remove('is-invalid');
-              errorDiv.style.display = 'none';
-          }
-      }
-
-      function calcolaPrezzo() {
-          const checkin = new Date(document.getElementById('checkin').value);
-          const checkout = new Date(document.getElementById('checkout').value);
-          if (!isNaN(checkin) && !isNaN(checkout) && checkin < checkout) {
-              const giorni = (checkout - checkin) / (1000 * 60 * 60 * 24);
-              const totale = giorni * cameraPrezzo;
-
-              document.getElementById('totale').textContent = totale.toFixed(2);
-              document.getElementById('prezzo_totale').style.display = 'block';
-          } else {
-              document.getElementById('prezzo_totale').style.display = 'none';
-          }
-      }
-
-      function disableUnavailableDates(unavailableDates) {
-          const checkinDateInputs = Array.from(document.querySelectorAll('[type="date"]'));
-          checkinDateInputs.forEach(input => {
-              input.value = '';
-              input.setAttribute('min', dataOdierna);
-              input.disabled = false;
-          });
-
-          if (unavailableDates.length) {
-              unavailableDates.forEach(dateRange => {
-                  let start = new Date(dateRange.checkin);
-                  let end = new Date(dateRange.checkout);
-
-                  while (start < end) {
-                      const formatted = start.toISOString().split('T')[0];
-                      const inputField = document.querySelector(`input[type="date"][value="${formatted}"]`);
-                      if (inputField) {
-                          inputField.setAttribute('disabled', 'true');
-                      }
-                      start.setDate(start.getDate() + 1);
-                  }
-              });
-          }
-      }
-
+  // CONTROLLO SULLA DATA DI NASCITA INSERITA
       function checkEta() {
           const dataNascita = new Date(document.getElementById('data_nascita').value);
           const eta = (new Date() - dataNascita) / (1000 * 60 * 60 * 24 * 365);
@@ -262,24 +314,27 @@ block content %}
               etaError.style.display = 'none';
           }
       }
+      document.getElementById('data_nascita').addEventListener('change', checkEta);
+
+
+
+
+      // controllo sul numero di persone inserito
 
       function checkNumeroPersone() {
-          const numeroPersone = parseInt(document.getElementById('numero_persone').value);
-          const personeError = document.getElementById('personeError');
+        const numeroPersone = parseInt(document.getElementById('numero_persone').value);
+        const personeError = document.getElementById('personeError');
 
-          if ((cameraId === 1 || cameraId === 4) && (numeroPersone < 1 || numeroPersone > 3) ||
-              (cameraId === 2 || cameraId === 5) && (numeroPersone < 1 || numeroPersone > 2) ||
-              (cameraId === 3 || cameraId === 6) && (numeroPersone !== 1)) {
-              document.getElementById('numero_persone').classList.add('is-invalid');
-              personeError.style.display = 'block';
-          } else {
-              document.getElementById('numero_persone').classList.remove('is-invalid');
-              personeError.style.display = 'none';
-          }
-      }
-
-      document.getElementById('data_nascita').addEventListener('change', checkEta);
+        if ((cameraId === 1 || cameraId === 4) && (numeroPersone < 1 || numeroPersone > 3) ||
+            (cameraId === 2 || cameraId === 5) && (numeroPersone < 1 || numeroPersone > 2) ||
+            (cameraId === 3 || cameraId === 6) && (numeroPersone !== 1)) {
+            document.getElementById('numero_persone').classList.add('is-invalid');
+            personeError.style.display = 'block';
+        } else {
+            document.getElementById('numero_persone').classList.remove('is-invalid');
+            personeError.style.display = 'none';
+        }
+    }
       document.getElementById('numero_persone').addEventListener('change', checkNumeroPersone);
-  });
 </script>
 {% endblock %}

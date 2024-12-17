@@ -4,11 +4,13 @@
 
 {% block content %}
 
+{#PRIMA SEZIONE #}
+
 <div class="container mt-5">
 
     <div class="row mb-4">
         <div class="col-md-6">
-            <img src="{{ url_for('static', filename='images/hotel_image.jpg') }}" class="img-fluid" alt="Hotel Labellavita">
+            <img src="{{ url_for('static', filename='images/hotel_image.jpg') }}" class="img-fluid">
         </div>
         <div class="col-md-6">
             <h2>Scopri il Nostro Hotel</h2>
@@ -16,21 +18,21 @@
         </div>
     </div>
 
-    <div class="separator"></div>
-    <div class="divider"></div>
+    <div class="separatore"></div>
+    <div class="divisore"></div>
 
-
+{# SEZIONE CONTENENTE IL CAROSELLO con un anchor sulla scritta che al click mi rimanda all rotta che ritorna la pagina di prenotazione generale #}
     <h2 class="my-5 text-center">
         <a href="{{ url_for('prenota') }}" class="text-decoration-none text-dark">Scopri subito tutte le nostre camere! Clicca qui!</a>
     </h2>
-    
-    <div id="roomCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+
+    <div id="roomCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="2000">
         <div class="carousel-inner">
             <div class="carousel-item active">
                 <img src="{{ url_for('static',filename='images/tripla_deluxe.jpg') }}" class="d-block">
             </div>
             <div class="carousel-item">
-                <img src="{{ url_for('static',filename='images/doppia_economica.jpg' ) }}" class="d-block" alt="Camera Tripla Deluxe">
+                <img src="{{ url_for('static',filename='images/doppia_economica.jpg' ) }}" class="d-block">
             </div>
             <div class="carousel-item">
                 <img src="{{ url_for('static', filename='images/singola_economica.jpg') }}" class="d-block">
@@ -48,13 +50,18 @@
     
     </div>
 
-    <div class="separator"></div>
-    <div class="divider"></div>
+
+    
+    <div class="separatore"></div>
+    <div class="divisore"></div>
+
+
+    {# ULTIMA SEZIONE #}
 
     <div class="row my-5">
         <div class="col-md-6 my-5">
             <h2>Esplora le Nostre Stanze</h2>
-            <p>Scopri tutte le opzioni di soggiorno che abbiamo da offrire. Ogni stanza è progettata per offrirti un'ottima esperienza, indipendentemente dalle tue esigenze. Prenota oggi stesso la tua fuga ideale!</p>
+            <p>Scopri tutte le opzioni di soggiorno che abbiamo da offrire. Ogni stanza è progettata per offrirti un'ottima esperienza, indipendentemente dalle tue esigenze. Prenota oggi stesso!</p>
         </div>
 
         <div class="col-md-6 my-5">
@@ -66,8 +73,8 @@
         </div>
     </div>
 
-    <div class="separator"></div>
-    <div class="divider"></div>
+    <div class="separatore"></div>
+    <div class="divisore"></div>
 
 </div>
 {% endblock %}

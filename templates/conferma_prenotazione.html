@@ -5,12 +5,14 @@
 {% block content %}
 <h2 class="text-cente my-5 text-center">Ecco i dettagli della tua prenotazione</h2>
 <div class="container mt-5 my-5">
+    {# tramite jinja recupero le info relative alla specifica prenotazion e ad i campi input nonchè attributi specificati nel modello prenotazione #}
     <p><strong>Nominativo:</strong> {{ prenotazione.nome }} {{ prenotazione.cognome }}</p>
     <p><strong>Codice Prenotazione:</strong> {{ prenotazione.codice_prenotazione }}</p>
     <p><strong>Check-in:</strong> {{ prenotazione.checkin }}</p>
     <p><strong>Check-out:</strong> {{ prenotazione.checkout }}</p>
     <p><strong>Email:</strong> {{ prenotazione.email }}</p>
     <p><strong>Numero di persone:</strong> {{ prenotazione.numero_persone }}</p>
+    {# recupero anche la tiplogia di camera richiamando l'attributo nome presente nel modello #}
     <p><strong>Tipologia di Camera:</strong> {{ camera.nome }}</p>
     <p><strong>Prezzo totale:</strong> {{ prenotazione.prezzo_totale}}€</p>
     <p class="col-6"><strong>Ricorda di controllare la tua email di conferma dove è stato inviato il codice prenotazione. Porta con te il codice prenotazione in struttura. Non dovrai anticipare nulla salderai direttamente il conto in struttura.</strong></p>
@@ -18,11 +20,21 @@
     <img src="{{ url_for('static', filename=camera.immagine) }}" alt="{{ camera.nome }}" class="img-fluid">
     </div>
     <div class="mt-4">
+        {# sempre col relativo codice prenotazione passo all'anchor sia il suddetto che la pagina modifica_prenotazione per essere direzionato là #}
         <a href="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" class="btn btn-warning">Modifica Prenotazione</a>
+        {# con l'attributo onlick richiamo la funzione sviluppata nel JS sottostante #}
         <button class="btn btn-danger" type="button" onclick="deleteBooking('{{ prenotazione.codice_prenotazione }}');">Cancella Prenotazione</button>
     </div>
-
+</div>
     <script>
+        // essendo un button, per la richiesta di tipo Delete ho elaborato questa funzione onclick che
+        //prende in input il codice della specifica prenotazione
+        //elimina il token della sessione in corso
+        // esegue una fetch dove come parametri gli do la route di elimina prenotazione con interpolato lo specifico codice di quella prenotazione
+        //cosi invia la richiesta di delete di quella specifica prenotazione alla rotta definita nel backend
+        // con il .then gestisco l'oggetto risposta passato alla funzione if la risposta è ok allora ritornami la pagina di conferma_eliminazione
+        //altrimenti ritornami l'alert
+        // col .catch se ci sono errori durante il processo faccio sia un console.error per far vedere l'errore in console che un alert per farlo visualizzare
         function deleteBooking(codice_prenotazione) {
             const token = '{{ session['elimina_token'] }}';
             fetch(`/elimina_prenotazione/${codice_prenotazione}`, {
@@ -45,5 +57,5 @@
             });
         }
     </script>
-</div>
+
 {% endblock %}

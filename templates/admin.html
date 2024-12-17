@@ -5,6 +5,8 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Login Admin</h2>
+    {# il method di invio del form è gestito da javascript con la fetch all'endpoint indicato, non mi serve indicarlo anche nella action #}
+    {#username:password admin root:root #}
     <form id="login-form" action="#">
         <div class="mb- col-3">
             <label for="username" class="form-label">Username:</label>
@@ -20,12 +22,19 @@
 </div>
 
 <script>
+
+    // "catturo" il form tramite id login-form e gli aggiungo un ascoltatore di eventi
     document.getElementById('login-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
+        // "catturo" l'elemento che ha id username in questo caso l'input del campo username, quindi l'username dell'utente
         const username = document.getElementById('username').value;
+
+        // catturo la password
         const password = document.getElementById('password').value;
 
+        // Promise fetch
+        // eseguo una fetch con method post all'endpoint indicato specificando che sto inviando dati in formato JSON
         fetch('/api/login', {
             method: 'POST',
             headers: {
@@ -33,21 +42,37 @@
             },
             body: JSON.stringify({ username: username, password: password })
         })
+
+        //una volta che la promise si conclude passo alla gestione della risposta col metodo .then tramite una funzione di callback che ha come
+        // parametro appunto l'oggetto response
+
         .then(response => {
+
+            // controllo la proprietà ok dell'oggetto response in altre parole lo stato che mi ritorna
+            // e se è diverso dallo stato ok cioè la richiesta non è andata a buon fine lanciamo l'errore
             if (!response.ok) {
                 throw new Error('Login fallito');
             }
+
+            // sennò ritornami il json del corpo della risposta
             return response.json();
         })
+
+        //secondo then è chiamato con i dati JSON convertiti della risposta ricevuta
+        //qui data rappresenta l'oggetto JSON restituito dal server.
         .then(data => {
             if (data.success) {
 
+                // se il login ha avuto successo reindirizzo l'utente alla pagina gestione
+                // usando sempre la sintassi del template Jinja
+
                 window.location.href = '{{ url_for("gestione") }}';
             } else {
-
+               // altrimenti entriamo nel inner text dell'elemento con id login-message e mostriamo il messaggio
                 document.getElementById('login-message').innerText = data.message;
             }
         })
+        // se si verifica un errore durante il processo con questo metodo sia in console che in visualizzazione mostro un messaggio di errore
         .catch(error => {
             console.error('Errore:', error);
             document.getElementById('login-message').innerText = 'Si è verificato un errore durante la richiesta.';

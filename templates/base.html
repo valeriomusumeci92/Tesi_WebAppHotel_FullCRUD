@@ -1,13 +1,25 @@
 <!DOCTYPE html>
+{# Layout di base utilizzato da altre pagine tramite l utilizzo del template engine di Flask ,Jinja,che posso predisporre e rendere disponibile #}
+{# ed usare come cornice per ogni pagina in cui voglio includerlo senza doverlo riscrivere tramite una sintassi specifica dell'engine #}
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    {# CDN di bootstrap #}
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    {# connessione alla directory dove sono salvati i file static #}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>{% block title %}Labellavita{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <title>{% block title %}Hotel Pegaso{% endblock %}</title>
+    
 </head>
 <body class="bg-light">
+
+
+{# Sezione relativa alla Navbar #}
 
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
@@ -21,6 +33,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('prenota') }}">Prenota</a>
                         </li>
+                    {# uso jinja per poter creare una logica dove se l'utente è autenticato ed amin allora mostrami quanto c'è nel corpo del ciclo #}
                         {% if current_user.is_authenticated and current_user.is_admin %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('gestione') }}">Gestione</a>
@@ -45,8 +58,11 @@
         </nav>
     </header>
 
+    {# qui creo un container per la visualizzazione dei messaggi flash usando jinja creando una lista che contiene la sintassi #}
+    {#che mi consenete di raccogliere i messaggi flash a prescindere da quali categorie appartengono , creo un ciclo if, se ci sono messaggi entri nel corpo #}
+    {# creo il div che deve contenere il messaggio itero la categoria ed il messaggio specifico e lo richiamo con la variabile message   #}
     <main class="flex-grow-1">
-        {% with messages = get_flashed_messages(with_categories=true) %}
+         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             <div class="container mt-3">
                 <div class="flashes">
@@ -69,10 +85,12 @@
             © 2024 Hotel <a class="navbar-brand" href="{{ url_for('home') }}">Pegaso</a>
         </div>
     </footer>
+   
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    
+    {# CDN per l'import delle dipendenze JS di Bootstrap #}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 
 </body>
 </html>

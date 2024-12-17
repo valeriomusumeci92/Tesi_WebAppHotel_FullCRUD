@@ -5,6 +5,8 @@
 {% block content %}
 <div class="container mt-5 col-6">
     <h2 class="text-center">Verifica Prenotazione</h2>
+    {#Al submit i dati verranno inviati alla medesima route che in caso di conformità tra il codice prentoazione immesso nel campo input e#}
+    {#quello presente nel db effettuerà un redirect alla pagina di conferma come si vede nella rotta presente nel backend#}
     <form method="POST">
         <div class="mb-3">
             <label for="codice_prenotazione" class="form-label">Inserisci il codice prenotazione:</label>

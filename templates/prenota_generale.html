@@ -6,13 +6,16 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Tipologie di Camere</h2>
     <div class="row">
+        {#itero sulla lista di camere facendo si che nel corpo del for per ogni elemento mi produca una card e usando sintassi jinja recupero nome e descriizione di#}
+        {#ogni camera, le card sono messe dentro una row contenuta a sua volta in un container il tutto per poter sfruttare il grid system di bootstrap fornendo una#}
+        {#visualizzazione delle camere pulita,ordinata,compatta e full responsive#}
         {% for camera in camere %}
         <div class="col-md-4 mb-4">
-            <div class="card">
+            <div class="card border-0">
                 <img src="{{ url_for('static', filename=camera.immagine) }}" class="card-img-top" alt="{{ camera.nome }}">
-                <div class="card-body">
+                <div class="card-body bg-light ">
                     <h5 class="card-title">{{ camera.nome }}</h5>
-                    <p class="card-text">{{ camera.descrizione }}</p> <!-- Opzionale: descrizione della camera -->
+                    <p class="card-text">{{ camera.descrizione }}</p>
                     <a href="{{ url_for('prenota_camera', camera_id=camera.id) }}" class="btn btn-primary">Prenota Ora</a>
                 </div>
             </div>
