@@ -1,7 +1,5 @@
 # Tesi_WebAppHotel_FullCRUD
 
-#da APP.PY startando il file si avvia il server
-
 # ADMIN Username:password root:root
 
 # Testing : nella pagina prenota si può accedere alla vetrina delle camere e cliccando si accede alla pagina contenente il form per la prenotazione della camera specifica
