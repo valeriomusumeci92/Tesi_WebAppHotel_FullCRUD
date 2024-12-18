@@ -4,8 +4,21 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Informazioni sull'Hotel</h2>
-    <img src="{{ url_for('static', filename='images/hotel_image.jpg') }}" class="img-fluid" alt="Hotel">
-    <p class="my-5">Il nostro hotel è stato fondato nel 2020 e da allora abbiamo soddisfatto oltre 1000 clienti. Venite a trovarci!</p>
+<div class="row ">
+    <div class="col-md-6 my-5">
+        <a class="text-reset text-decoration-none" href="{{ url_for('home') }}"><h1>Hotel Pegaso </h1></a>
+        <img src="{{ url_for('static', filename='images/hotel_image.jpg') }}" class="img-fluid my-5" alt="Hotel">
+         <p class="my-2">Il nostro hotel è stato fondato nel 2020 e da allora abbiamo soddisfatto oltre 1000 clienti. Venite a trovarci!</p>
+    </div>
+
+    <div class="col-md-6 my-5">
+        <h2>Dove siamo</h2>
+        <a href="https://www.google.com/maps/place/Copenaghen,+Danimarca/" target="_blank" style="display: block;">
+            <iframe class="my-5"src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2247811.9787195246!2d12.022276309613911!3d55.67609615705528!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4654aa219ed20e13%3A0xd1a1d2c0630dc2f2!2sCopenaghen%2C%20Danimarca!5e0!3m2!1sit!2sit!4v1684206868439!5m2!1sit!2sit" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            <span class="visually-hidden">Apri Google Maps per Copenaghen</span>
+        </a>
+    </div>
 </div>
+</div>
+
 {% endblock %}
