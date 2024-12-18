@@ -447,7 +447,7 @@ def elimina_prenotazione(codice_prenotazione):
         return jsonify({'message': 'Prenotazione non trovata'}), 404
 
 
-# rotte per admin
+# rotte per admin(username:password root:root)
 
 
 # nella pagina frontend di log-ing admin tramite JS faccio una fetch per inviare a questo endpoint in formato json le credenziali di accesso admin
@@ -483,7 +483,7 @@ def gestione():
 
 
 
-# in questa rotta invio la richiesta dal frontend per settare lo stato della camera a false
+# in questa rotta invio la richiesta dal frontend per settare lo stato della camera a false ed effettuare il commit al db
 @app.route('/admin/camera/<int:camera_id>/non_disponibile', methods=['POST'])
 @login_required
 def elimina_disponibilita(camera_id):
@@ -498,7 +498,7 @@ def elimina_disponibilita(camera_id):
 
 
 
-# in questa rotta invio la richiesta dal frontend per resettare lo stato della camera a true
+# in questa rotta invio la richiesta dal frontend per resettare lo stato della camera a true ed effettuare il commit al db
 @app.route('/admin/camera/<int:camera_id>/disponibile', methods=['POST'])
 @login_required
 def rendi_disponibile(camera_id):

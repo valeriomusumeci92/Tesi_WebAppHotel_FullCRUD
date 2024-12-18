@@ -1,61 +1,134 @@
 {% extends 'base.html' %}
 
+{#nei campi value recupero le info compilate e salvate nel db relative a quella prenotazione#}
 {% block title %}Modifica Prenotazione{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h1>Modifica Prenotazione</h1>
+    {#la actioon qui ovviamente mira alla rotta di modifica assieme allo specifco codice prenotazione di quella prenotazione#}
     <form id="prenotazioneForm" action="{{ url_for('modifica_prenotazione', codice_prenotazione=prenotazione.codice_prenotazione) }}" method="POST">
         <input type="hidden" name="token" value="{{ token }}">
-        
-        <div class="form-group">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" placeholder="Nome" value="{{ prenotazione.nome }}" required class="form-control" pattern="[a-zA-Z]+" />
-            <div class="invalid-feedback" id="nomeError" style="display: none;">Digitare solo lettere</div>
+
+        {#nei campi value recupero le info compilate e salvate nel db relative a quella prenotazione#}
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" placeholder="Nome" value="{{ prenotazione.nome }}" required class="form-control" pattern="[a-zA-Z]+" />
+                <div class="invalid-feedback" id="nomeError" style="display: none;">Digitare solo lettere</div>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label for="cognome">Cognome</label>
+                <input type="text" id="cognome" name="cognome" placeholder="Cognome" value="{{ prenotazione.cognome }}" required class="form-control" pattern="[a-zA-Z]+" />
+                <div class="invalid-feedback" id="cognomeError" style="display: none;">Digitare solo lettere</div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="cognome">Cognome</label>
-            <input type="text" id="cognome" name="cognome" placeholder="Cognome" value="{{ prenotazione.cognome }}" required class="form-control" pattern="[a-zA-Z]+" />
-            <div class="invalid-feedback" id="cognomeError" style="display: none;">Digitare solo lettere</div>
-        </div>
-       
-        <div class="form-group">
-            <label for="checkin">Data di Check-in</label>
-            <input type="date" id="checkin" name="checkin" value="{{ prenotazione.checkin }}" required class="form-control" onchange="calcolaPrezzo()">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="checkin">Data di Check-in</label>
+                <input type="date" id="checkin" name="checkin" value="{{ prenotazione.checkin }}" required class="form-control" onchange="calcolaPrezzo()">
+            </div>
+
+            <div class="form-group col-md-6">
+                <label for="checkout">Data di Check-out</label>
+                <input type="date" id="checkout" name="checkout" value="{{ prenotazione.checkout }}" required class="form-control" onchange="calcolaPrezzo()">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="checkout">Data di Check-out</label>
-            <input type="date" id="checkout" name="checkout" value="{{ prenotazione.checkout }}" required class="form-control" onchange="calcolaPrezzo()">
+        <div id="error-message" style="color: red; display: none;"></div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="data_nascita">Data di Nascita</label>
+                <input type="date" id="data_nascita" name="data_nascita" value="{{ prenotazione.data_nascita }}" required class="form-control" onchange="checkEta()">
+                <div class="invalid-feedback" id="etaError">Devi avere almeno 18 anni per effettuare una prenotazione.</div>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label for="numero_persone">Numero di Persone</label>
+                <input type="number" id="numero_persone" name="numero_persone" placeholder="Numero di persone" value="{{ prenotazione.numero_persone }}" required class="form-control" min="1" max="3" onchange="checkNumeroPersone()">
+                <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="data_nascita">Data di Nascita</label>
-            <input type="date" id="data_nascita" name="data_nascita" value="{{ prenotazione.data_nascita }}" required class="form-control" onchange="checkEta()">
-            <div class="invalid-feedback" id="etaError">Devi avere almeno 18 anni per effettuare una prenotazione.</div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" value="{{ prenotazione.email }}" required class="form-control" />
+                <div class="invalid-feedback" id="emailError" style="display: none;">Email non valida</div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="numero_persone">Numero di Persone</label>
-            <input type="number" id="numero_persone" name="numero_persone" placeholder="Numero di persone" value="{{ prenotazione.numero_persone }}" required class="form-control" min="1" max="3" onchange="checkNumeroPersone()">
-            <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
-        </div>
-
-
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Email" value="{{ prenotazione.email }}" required class="form-control" />
-            <div class="invalid-feedback" id="emailError" style="display: none;">Email non valida</div>
-        </div>
-        <div class="form-group">
 
         <h3 class="text-center my-3" id="prezzo_totale" style="display: none;">Prezzo Totale: €<span id="totale"></span></h3>
         <button type="submit" class="btn btn-primary my-3">Conferma Modifica</button>
     </form>
 </div>
-    <script>
+ <script>
         // STESSE LOGICHE E CONTROLLI PRESENTI NEL TEMPLATE CAMERA_SPECIFICA 
+  const cameraPrezzo = {{ camera.prezzo }};
+  const cameraId = {{ camera.id }};
+
+  document.addEventListener('DOMContentLoaded', async function() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('checkin').setAttribute('min', today);
+
+      // Gestione degli eventi per il check-in e il check-out
+      document.getElementById('checkin').addEventListener('change', handleCheckinChange);
+      document.getElementById('checkout').addEventListener('change', validateDateRange);
+  });
+
+  async function handleCheckinChange() {
+      const checkinDate = document.getElementById('checkin').value;
+      const checkoutDate = new Date(checkinDate);
+      checkoutDate.setDate(checkoutDate.getDate() + 1);
+      document.getElementById('checkout').value = checkoutDate.toISOString().split('T')[0];
+
+
+      const checkoutInput = document.getElementById('checkout');
+      checkoutInput.setAttribute('min', checkoutDate.toISOString().split('T')[0]);
+      await validateDateRange();
+  }
+
+  async function validateDateRange() {
+      const checkinDate = document.getElementById('checkin').value;
+      const checkoutDate = document.getElementById('checkout').value;
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.style.display = "none";
+      errorMessage.innerText = "";
+
+      if (checkinDate && checkoutDate) {
+          const unavailableDates = await getUnavailableDates(cameraId, checkinDate, checkoutDate);
+          if (unavailableDates.length > 0) {
+              errorMessage.innerText = "Camera prenotata in questa data, seleziona un altro giorno.";
+              errorMessage.style.display = "block";
+              document.getElementById('checkin').value = '';
+              document.getElementById('checkout').value = '';
+              return false;
+          }
+          return true;
+      }
+      return false;
+  }
+
+  async function getUnavailableDates(cameraId, checkin, checkout) {
+      const response = await fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`);
+      if (response.ok) {
+          return await response.json();
+      } else {
+          throw new Error("Errore nel recuperare le date non disponibili");
+      }
+  }
+
+  document.getElementById('prenotazioneForm').addEventListener('submit', async function(event) {
+      const checkinDate = document.getElementById('checkin').value;
+      const checkoutDate = document.getElementById('checkout').value;
+
+      if (!await validateDateRange() || !checkinDate || !checkoutDate) {
+          event.preventDefault();
+      }
+  });
 
     function validateName(input) {
         const pattern = /^[A-Za-z]+$/;
@@ -107,8 +180,6 @@
         
         return nomeValid && cognomeValid && emailValid;
     };
-    const cameraPrezzo = {{ camera.prezzo }};
-    const cameraId = {{ camera.id }};
     
     function checkEta() {
         const dataNascita = new Date(document.getElementById('data_nascita').value);
@@ -156,80 +227,6 @@
         }
     }
 
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const prezzoPerNotte = {{ camera.prezzo }};
-        const oggi = new Date();
-        const dataOdierna = oggi.toISOString().split('T')[0];
-        document.getElementById('checkin').setAttribute('min', dataOdierna);
-
-    function disableUnavailableDates(unavailableDates) {
-        const checkinDateInputs = Array.from(document.querySelectorAll('[type="date"]'));
-        checkinDateInputs.forEach(input => {
-            input.value = '';
-            input.setAttribute('min', dataOdierna);
-            input.disabled = false;
-        });
-
-        if (unavailableDates.length) {
-            unavailableDates.forEach(dateRange => {
-
-                let start = new Date(dateRange.checkin);
-                let end = new Date(dateRange.checkout);
-
-                while (start < end) {
-                    const formatted = start.toISOString().split('T')[0];
-                    const inputField = document.querySelector(`input[type="date"][value="${formatted}"]`);
-                    if (inputField) {
-                        inputField.setAttribute('disabled', 'true');
-                    }
-                    start.setDate(start.getDate() + 1);
-                }
-            });
-        }
-    }
-
-    document.getElementById('checkin').addEventListener('change', function() {
-        const checkinDate = new Date(this.value);
-        const checkoutMinDate = new Date(checkinDate);
-        checkoutMinDate.setDate(checkoutMinDate.getDate() + 1);
-        const checkoutMinDateStr = checkoutMinDate.toISOString().split('T')[0];
-        document.getElementById('checkout').setAttribute('min', checkoutMinDateStr);
-        calcolaPrezzoTotale();
-    });
-
-    document.getElementById('checkout').addEventListener('change', calcolaPrezzoTotale);
-
-    const form = document.getElementById('prenotazioneForm');
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const checkin = document.getElementById('checkin').value;
-        const checkout = document.getElementById('checkout').value;
-
-
-        fetch(`/api/disponibilita_camera/{{ camera.id }}?checkin=${checkin}&checkout=${checkout}`)
-            .then(response => response.json())
-            .then(data => {
-
-                const unavailableDates = data;
-
-                if (data.length > 0) {
-                    document.getElementById('disponibilitaError').style.display = 'block';
-                    disableUnavailableDates(data);
-                    return;
-                } else {
-                    document.getElementById('disponibilitaError').style.display = 'none';
-                    form.submit();
-                }
-            })
-            .catch(error => {
-                console.error('Si è verificato un errore:', error);
-                document.getElementById('disponibilitaError').innerText = 'Si è verificato un errore nel recuperare le date.';
-                document.getElementById('disponibilitaError').style.display = 'block';
-            });
-        });
-    });
 </script>
 
 {% endblock %}

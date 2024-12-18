@@ -93,19 +93,8 @@
     margin: 10px 0;
 }
 
-.flatpickr-disabled {
-    position: relative;
-}
 
-.flatpickr-disabled::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 2px; /* Spessore della linea */
-    background-color: red; /* Colore della linea */
-    transform: translateY(-50%); /* Centra la linea verticalmente */
-    z-index: 10; /* Assicura che la linea sia sopra il testo della data */
+#error-message {
+    color: red;
+    display: none;
 }
-

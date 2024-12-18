@@ -1,77 +1,76 @@
-{% extends 'base.html' %} {% block title %}Prenotazione Camera{% endblock %} {%
-block content %}
+{% extends 'base.html' %} 
+{% block title %}Prenotazione Camera{% endblock %} 
+{% block content %}
 <div class="container mt-5">
   <h1 class="text-center">{{ camera.nome }}</h1>
   <div class="text-center mb-4">
-    <img src="{{ url_for('static', filename=camera.immagine) }}" class="img-fluid"style="max-height: 300px; object-fit: cover"/>
+    <img src="{{ url_for('static', filename=camera.immagine) }}" class="img-fluid" style="max-height: 300px; object-fit: cover"/>
   </div>
   <p class="text-center">{{ camera.descrizione }}</p>
   <h2 class="text-center">Prezzo per notte: €{{ camera.prezzo }}</h2>
 
-  {#Form per la prenotazione con id per essere richiamato nel js e method post che invia i dati dei campi alla rotta parametrica con l'id specifico della camera #}
   <form id="prenotazioneForm" method="POST" action="{{ url_for('invia_prenotazione', camera_id=camera_id) }}">
     <input type="hidden" name="token" value="{{ token }}" />
     
-    <div class="form-group">
-      <label for="nome">Nome</label>
-      <input type="text" id="nome" name="nome" placeholder="Nome" required class="form-control" pattern="[a-zA-Z]+" />
-      <div class="invalid-feedback" id="nomeError" style="display: none;">Digitare solo lettere</div>
-  </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="nome" placeholder="Nome" required class="form-control" pattern="[a-zA-Z]+" />
+        <div class="invalid-feedback" id="nomeError" style="display: none;">Digitare solo lettere</div>
+      </div>
 
-    <div class="form-group">
+      <div class="form-group col-md-6">
         <label for="cognome">Cognome</label>
         <input type="text" id="cognome" name="cognome" placeholder="Cognome" required class="form-control" pattern="[a-zA-Z]+" />
         <div class="invalid-feedback" id="cognomeError" style="display: none;">Digitare solo lettere</div>
-    </div>
-
-
-    <div class="form-group">
-      <label for="checkin">Data di Check-in</label>
-      <input type="text" id="checkin" name="checkin" required class="form-control" />
-  </div>
-
-  
-  <div class="form-group">
-      <label for="checkout">Data di Check-out</label>
-      <input type="text" id="checkout" name="checkout" required class="form-control" />
-  </div>
-  
-  <div id="error-message" style="color: red; display: none;"></div>
-  
-
-    <div class="form-group">
-      <label for="data_nascita">Data di Nascita</label>
-      <input type="date"id="data_nascita"name="data_nascita"required class="form-control"onchange="checkEta()" />
-      <div class="invalid-feedback" id="etaError">
-        Devi avere almeno 18 anni per effettuare una prenotazione.
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="numero_persone">Numero di Persone</label>
-      <input type="number" id="numero_persone" name="numero_persone" placeholder="Numero di persone" required class="form-control" min="1" max="3" onchange="checkNumeroPersone()">
-      <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
-  </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="checkin">Data di Check-in</label>
+        <input type="date" id="checkin" name="checkin" required class="form-control" />
+      </div>
 
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" placeholder="Email" required class="form-control" />
-    <div class="invalid-feedback" id="emailError" style="display: none;">Email non valida</div>
-</div>
+      <div class="form-group col-md-6">
+        <label for="checkout">Data di Check-out</label>
+        <input type="date" id="checkout" name="checkout" required class="form-control" />
+      </div>
+    </div>
 
+    <div id="error-message" style="color: red; display: none;"></div>
+
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="data_nascita">Data di Nascita</label>
+        <input type="date" id="data_nascita" name="data_nascita" required class="form-control" onchange="checkEta()" />
+        <div class="invalid-feedback" id="etaError">Devi avere almeno 18 anni per effettuare una prenotazione.</div>
+      </div>
+
+      <div class="form-group col-md-6">
+        <label for="numero_persone">Numero di Persone</label>
+        <input type="number" id="numero_persone" name="numero_persone" placeholder="Numero di persone" required class="form-control" min="1" max="3" onchange="checkNumeroPersone()">
+        <div class="invalid-feedback" id="personeError">Possono esserci da 1 a {{ camera.max_persone }} persone in questa camera.</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Email" required class="form-control" />
+        <div class="invalid-feedback" id="emailError" style="display: none;">Email non valida</div>
+      </div>
+    </div>
 
     <h3 class="text-center my-3" id="prezzo_totale" style="display: none">
       Prezzo Totale: €<span id="totale"></span>
     </h3>
+
     <div class="row">
       <button type="submit" class="btn btn-primary my-3 col-3">
         Conferma Prenotazione
       </button>
-      <div
-        class="alert alert-danger col-6 mx-4"
-        id="disponibilitaError"
-        style="display: none"
-      >
+     <div class="alert alert-danger col-6 mx-4" id="disponibilitaError" style="display: none">
         Camera non disponibile nelle date selezionate, seleziona altre date.
       </div>
     </div>
@@ -79,126 +78,75 @@ block content %}
 </div>
 
 <script>
-  // recupero salvandole nelle seguenti variabili prezzo ed id della camera cosi da poterle usare nelle successive logiche e funzioni
-const cameraPrezzo = {{ camera.prezzo }};
-const cameraId = {{ camera.id }};
 
-// controllo su date e le loro disponibilità
-document.addEventListener('DOMContentLoaded', async function() {
+// salvo in delle variabili il prezzo e id delle camere in quanto mi servrirà averle dichiarate nelle logiche che implementerò per i controlli
+  const cameraPrezzo = {{ camera.prezzo }};
   const cameraId = {{ camera.id }};
-  const today = new Date();
 
-  document.getElementById('checkin').addEventListener('focus', async function() {
-      await disableDatesOnPageLoad(cameraId, today);
+// controllo sulle date garantendo che il check in parta dalla data odierna
+// il check out da un giorno dopo il check in cosi da evitare conflitti
+// e svuotando i campi mostrando messaggio di errore se l'utenete seleziona una data gia salvata nel db e raccolta tramite richiesta API dal backend
+// dalla variabile unavailableDates che mi ritorna quindi tutte le date già prenotate presenti nel db e mi consente di usarla
+//per far funzionare i controlli.
+  document.addEventListener('DOMContentLoaded', async function() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('checkin').setAttribute('min', today); 
+
+      // Gestione degli eventi per il check-in e il check-out
+      document.getElementById('checkin').addEventListener('change', handleCheckinChange);
+      document.getElementById('checkout').addEventListener('change', validateDateRange);
   });
 
-  document.getElementById('checkout').addEventListener('focus', async function() {
-      await disableDatesOnPageLoad(cameraId, today);
-  });
+  async function handleCheckinChange() {
+      const checkinDate = document.getElementById('checkin').value;
+      const checkoutDate = new Date(checkinDate);
+      checkoutDate.setDate(checkoutDate.getDate() + 1);
+      document.getElementById('checkout').value = checkoutDate.toISOString().split('T')[0];
 
-  // Inizializza Flatpickr per Check-in
-  flatpickr("#checkin", {
-      minDate: "today",
-      onChange: function(selectedDates) {
-          if (selectedDates.length > 0) {
-              // Imposta la data di checkout un giorno dopo il check-in selezionato
-              const checkinDate = selectedDates[0];
-              const checkoutDate = new Date(checkinDate);
-              checkoutDate.setDate(checkinDate.getDate() + 1); // Imposta la data di checkout per un giorno dopo
 
-              // Aggiorna Flatpickr per il checkout con la nuova data minima
-              flatpickr("#checkout", {
-                  minDate: checkoutDate.toISOString().split('T')[0], // Imposta la nuova data minima di checkout
-                  disable: [] // Pulisci eventuali disabilitazioni precedenti
-              });
+      const checkoutInput = document.getElementById('checkout');
+      checkoutInput.setAttribute('min', checkoutDate.toISOString().split('T')[0]);
+      await validateDateRange();
+  }
 
-              // Se non è stata selezionata una data di checkout precedente
-              if (!document.getElementById('checkout').value || document.getElementById('checkout').value < checkoutDate.toISOString().split('T')[0]) {
-                  document.getElementById('checkout').value = checkoutDate.toISOString().split('T')[0]; // Seleziona automaticamente la data di checkout
-              }
+  async function validateDateRange() {
+      const checkinDate = document.getElementById('checkin').value;
+      const checkoutDate = document.getElementById('checkout').value;
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.style.display = "none";
+      errorMessage.innerText = "";
+
+      if (checkinDate && checkoutDate) {
+          const unavailableDates = await getUnavailableDates(cameraId, checkinDate, checkoutDate);
+          if (unavailableDates.length > 0) {
+              errorMessage.innerText = "Camera prenotata in questa data, seleziona un altro giorno.";
+              errorMessage.style.display = "block";
+              document.getElementById('checkin').value = '';
+              document.getElementById('checkout').value = '';
+              return false;
           }
+          return true;
+      }
+      return false;
+  }
+
+  async function getUnavailableDates(cameraId, checkin, checkout) {
+      const response = await fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`);
+      if (response.ok) {
+          return await response.json();
+      } else {
+          throw new Error("Errore nel recuperare le date non disponibili");
+      }
+  }
+
+  document.getElementById('prenotazioneForm').addEventListener('submit', async function(event) {
+      const checkinDate = document.getElementById('checkin').value;
+      const checkoutDate = document.getElementById('checkout').value;
+
+      if (!await validateDateRange() || !checkinDate || !checkoutDate) {
+          event.preventDefault();
       }
   });
-
-  // Inizializza Flatpickr per il Checkout
-  flatpickr("#checkout", {
-      minDate: new Date().toISOString().split('T')[0]
-  });
-});
-
-async function disableDatesOnPageLoad(cameraId, today) {
-  try {
-      const unavailableDates = await getUnavailableDates(cameraId, today.toISOString().split('T')[0], null);
-      disableUnavailableDates(unavailableDates);
-  } catch (error) {
-      console.error("Errore nella richiesta delle date non disponibili: ", error);
-  }
-}
-
-async function getUnavailableDates(cameraId, checkin, checkout) {
-  const response = await fetch(`/api/disponibilita_camera/${cameraId}?checkin=${checkin}&checkout=${checkout}`);
-  if (response.ok) {
-      return await response.json();
-  } else {
-      throw new Error("Errore nel recuperare le date non disponibili");
-  }
-}
-
-function disableUnavailableDates(unavailableDates) {
-  let disabledDates = [];
-  unavailableDates.forEach(date => {
-      const fromDate = new Date(date.checkin);
-      const toDate = new Date(date.checkout);
-      for (let d = fromDate; d <= toDate; d.setDate(d.getDate() + 1)) {
-          disabledDates.push(new Date(d).toISOString().split('T')[0]);
-      }
-  });
-
-  flatpickr("#checkin", {
-      minDate: "today",
-      disable: disabledDates
-  });
-
-  flatpickr("#checkout", {
-      minDate: new Date().toISOString().split('T')[0],
-      disable: disabledDates
-  });
-}
-
-document.getElementById('checkin').addEventListener('change', validateDateRange);
-document.getElementById('checkout').addEventListener('change', validateDateRange);
-
-document.getElementById('prenotazioneForm').addEventListener('submit', async function(event) {
-  const checkinDate = document.getElementById('checkin').value;
-  const checkoutDate = document.getElementById('checkout').value;
-
-  if (!await validateDateRange() || !checkinDate || !checkoutDate) {
-      event.preventDefault();
-  }
-});
-
-async function validateDateRange() {
-  const checkinDate = document.getElementById('checkin').value;
-  const checkoutDate = document.getElementById('checkout').value;
-  const errorMessage = document.getElementById('error-message');
-
-  errorMessage.style.display = "none";
-  errorMessage.innerText = "";
-
-  if (checkinDate && checkoutDate) {
-      const unavailableDates = await getUnavailableDates(cameraId, checkinDate, checkoutDate);
-      if (unavailableDates.length > 0) {
-          errorMessage.innerText = "Date selezionate non valide. Selezionare date valide.";
-          errorMessage.style.display = "block";
-          document.getElementById('checkin').value = '';
-          document.getElementById('checkout').value = '';
-          return false; 
-      }
-      return true;
-  }
-  return false;  
-}
-
 
 
 
