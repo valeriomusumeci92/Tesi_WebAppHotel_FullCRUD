@@ -1,6 +1,9 @@
 {% extends 'base.html' %} 
 {% block title %}Prenotazione Camera{% endblock %} 
 {% block content %}
+{#pagina contenente il form con action dove tramite sintassi jinjda passo l'id specifico della camera e la rotta dove invierò #}
+{#con method post i dati compilati negli input del form e che poi verrano tramite la funzione definita nella rotta inviati al db#}
+{#alla suddetta rotta invierò anche il token per preservare l'integrità della sessione utente e l'invio dei dati#}
 <div class="container mt-5">
   <h1 class="text-center">{{ camera.nome }}</h1>
   <div class="text-center mb-4">
