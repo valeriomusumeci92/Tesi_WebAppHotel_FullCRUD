@@ -1,5 +1,6 @@
 # Tesi_WebAppHotel_FullCRUD
 
+# AVVIARE IL SERVER : Runnando app.py si avvia il server
 
 # ADMIN Username:password root:root
 
